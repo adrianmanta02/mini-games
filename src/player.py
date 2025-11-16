@@ -12,16 +12,40 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x_position, y_position, width, height):
         self.rect = pygame.Rect(x_position, y_position, width, height)
         self.x_velocity = 0
-        self.y_velocity = 0
-        self.mask = None
+        self.y_velocity = 1
         self.direction = "right" # it will help with player's animation handling
         self.animation_count = 0
         self.fall_count = 0 # timestamp for falling, the longer the player falls, the faster it is
         self.sprites = sprite_loader.load_sprites("MainCharacters", "VirtualGuy", 32, 32, True)
-        self.current_sprite = None
+        self.current_sprite = self.sprites["idle_right"][0]
+        self.mask = pygame.mask.from_surface(self.current_sprite)
         self.animation_delay = 5 # animation delay between sprite changes
 
-    def handle_move(self, velocity):
+    def landed(self):
+        self.fall_count = 0 # reset adding gravity counter
+        self.y_velocity = 0 
+        self.jump_count = 0 
+
+    def hithead(self):
+        self.fall_count = 0
+        self.y_velocity *= -1 # bounce backwards
+    
+    def handle_vertical_collision(self, objects, dy):
+        collided_objects = []
+        for object in objects:
+            if pygame.sprite.collide_mask(self, object):
+                if dy > 0:
+                    self.rect.bottom = object.rect.top
+                    self.landed()
+                elif dy < 0:
+                    self.rect.top = object.rect.bottom
+                    self.hithead()
+
+                collided_objects.append(object)
+
+        return collided_objects
+
+    def handle_move(self, velocity, object_colliding_with):
         keys = pygame.key.get_pressed()
         self.x_velocity = 0
 
@@ -30,6 +54,8 @@ class Player(pygame.sprite.Sprite):
         
         if keys[pygame.K_RIGHT]:
             self.move_right(velocity)
+
+        self.handle_vertical_collision(object_colliding_with, self.y_velocity)
  
     def move_right(self, velocity: int):
         self.x_velocity += velocity
@@ -43,11 +69,17 @@ class Player(pygame.sprite.Sprite):
             self.direction = "left"
             self.animation_count = 0
 
-    def moving_loop(self, fps_count):
+    def moving_loop(self, fps_count, objects):
         self.rect.x += self.x_velocity
+
+        # gravity
+        self.y_velocity += min(1, self.GRAVITY / fps_count) * self.fall_count
+        self.rect.y += self.y_velocity
+        self.fall_count += 1
         
-        # self.rect.y += min(1, (self.fall_count / fps_count) * self.GRAVITY)
-        # self.fall_count += 1
+        # vertical collisions
+        self.handle_vertical_collision(objects, self.y_velocity)
+
         self.update_sprite()
 
     def draw(self, window: pygame.Surface):
