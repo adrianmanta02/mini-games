@@ -7,6 +7,7 @@ from os.path import isfile, join
 from screen import Screen
 from player import Player
 from block import Block
+from fire import Fire
 
 pygame.init()
 pygame.display.set_caption("Adrian's Supergame")
@@ -25,8 +26,6 @@ def draw_background(screen: Screen, window, tile_model_name: str, objects: List[
 
     for object in objects:
         object.draw(window = window, offset_x = offset_x)
-        
-    pygame.display.update()
 
 def main(window):  
     clock = pygame.time.Clock()
@@ -35,9 +34,12 @@ def main(window):
     offset_x = 0 
     scroll_area_width = 200
 
+    fire = Fire(100, screen.height - block_size - 64, 16, 32)
+    fire.on()
+
     # create the base floor of blocks
     floor = [Block((i * block_size), screen.height - block_size, block_size) for i in range(-screen.width // block_size, screen.width * 2 // block_size)]
-    objects = [*floor, Block(0, screen.height - block_size * 2, block_size)]
+    objects = [*floor, Block(0, screen.height - block_size * 2, block_size), fire]
 
     is_running = True
     while is_running:
@@ -62,6 +64,9 @@ def main(window):
 
         draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = objects, offset_x = offset_x)
         player.draw(window = window, offset_x = offset_x)
+    
+        fire.update_sprite()
+        fire.draw(window = window, offset_x = offset_x)
         
         pygame.display.flip()
 if __name__ == "__main__":

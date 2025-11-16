@@ -7,8 +7,8 @@ class Block(CollidableObject):
     def __init__(self, x, y, size):  
         super().__init__(x,y,size,size)
         block = self.load_block(size)
-        self.image.blit(block, (0,0))
-        self.mask = pygame.mask.from_surface(self.image)
+        self.current_sprite.blit(block, (0,0))
+        self.mask = pygame.mask.from_surface(self.current_sprite)
 
     def load_block(self, size):
         # get the absolute path to the terrain assets

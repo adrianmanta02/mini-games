@@ -3,6 +3,7 @@ from typing import Tuple
 from sprite_loader import SpriteLoader
 
 sprite_loader = SpriteLoader()
+FPS_COUNT = 60
 
 # using sprite for pixel-perfect collisions
 class Player(pygame.sprite.Sprite):
@@ -21,18 +22,35 @@ class Player(pygame.sprite.Sprite):
         self.current_sprite = self.sprites["idle_right"][0]
         self.mask = pygame.mask.from_surface(self.current_sprite)
         self.animation_delay = 5 # animation delay between sprite changes
-    
+
+        self.lives = 5
+        self.hit_count = 0
+        self.hit_flag = False
+        self.hit_timer = 0
+
     def jump(self):
-        self.y_velocity = -self.GRAVITY * 8
+        self.y_velocity = -self.GRAVITY * 8 # change the direction of the velocity -> negative means moving upwards
         self.animation_count = 0
+
         self.jump_count += 1
+      
         if self.jump_count == 1:
             self.fall_count # as soon as player jumps, set the fall count to 0, in order not to be directly dragged down by the gravity
 
     def landed(self):
         self.fall_count = 0 # reset adding gravity counter
-        self.y_velocity = 0 
-        self.jump_count = 0
+        self.y_velocity = 0 # remove floating effect
+        self.jump_count = 0 
+
+    def hit(self):
+        self.lives -= 1
+        self.hit_flag = True
+        self.hit_timer = FPS_COUNT
+        print("Lives: ", self.lives)
+
+        # check if alive
+        if self.lives <= 0:
+            pygame.quit()
 
     def hithead(self):
         self.fall_count = 0
@@ -45,6 +63,7 @@ class Player(pygame.sprite.Sprite):
                 if dy > 0:
                     self.rect.bottom = object.rect.top
                     self.landed()
+                    object.on_player_collision(self)
                 elif dy < 0:
                     self.rect.top = object.rect.bottom
                     self.hithead()
@@ -130,6 +149,13 @@ class Player(pygame.sprite.Sprite):
         # running
         elif self.x_velocity != 0: # movement detected -> load moving sprites
             sprite = "run"
+
+        # getting damaged 
+        elif self.hit_flag == True:
+            sprite = "hit"
+            self.hit_timer -= 1
+            if self.hit_timer <= 0:
+                self.hit_flag = False
         
         # get the corresponding sprites according to the direction our player is facing
         sprite_sheet = sprite + "_" + self.direction

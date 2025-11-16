@@ -14,7 +14,7 @@ class SpriteLoader:
         # obtain the path to the folder containing the spritesheets
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         path = os.path.join(BASE_DIR, "..", "assets", directory1, directory2)
-        
+
         # get the paths for all spritesheets
         images = [image for image in os.listdir(path) if isfile(os.path.join(path, image))]
 
@@ -38,6 +38,8 @@ class SpriteLoader:
                 sprites.append(pygame.transform.scale2x(surface=surface))
 
             key = image.replace(".png", "") # set the keys for the dictionary based on the file names
+            print("\nThis my key: ", key)
+            print("This the sprites i got for the key: ", sprites)
             if direction:
                 # asign correct stripes for direction purposes
                 all_sprites[key + "_right"] = sprites
@@ -46,4 +48,5 @@ class SpriteLoader:
             else: 
                 all_sprites[key] = sprites
 
+        print("\n\n\nSpriteeees: ", all_sprites)
         return all_sprites 
