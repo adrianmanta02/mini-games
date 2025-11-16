@@ -18,13 +18,13 @@ screen = Screen(fps = FPS_COUNT, bgcolor = BG_COLOR)
 window = pygame.display.set_mode((screen.width, screen.height))
 player =  Player(100, 100, 100, 100)
 
-def draw_background(screen: Screen, window, tile_model_name: str, objects: List[Block]): 
+def draw_background(screen: Screen, window, tile_model_name: str, objects: List[Block], offset_x: int): 
     tiles, image = screen.get_background_tiles(tile_model_name)
     for tile in tiles:
         window.blit(image, tile)
 
     for object in objects:
-        object.draw(window = window)
+        object.draw(window = window, offset_x = offset_x)
         
     pygame.display.update()
 
@@ -32,6 +32,8 @@ def main(window):
     clock = pygame.time.Clock()
 
     block_size = 96
+    offset_x = 0 
+    scroll_area_width = 200
 
     # create the base floor of blocks
     floor = [Block((i * block_size), screen.height - block_size, block_size) for i in range(-screen.width // block_size, screen.width * 2 // block_size)]
@@ -51,11 +53,14 @@ def main(window):
                 if event.key == pygame.K_SPACE and player.jump_count < 2:
                     player.jump()
 
+        if ((player.rect.right - offset_x >= screen.width - scroll_area_width) and player.x_velocity > 0) or ((player.rect.left - offset_x <= scroll_area_width and player.x_velocity < 0)):
+            offset_x += player.x_velocity
+
         player.handle_move(5, floor)
         player.moving_loop(screen.fps, floor)
 
-        draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = floor)
-        player.draw(window = window)
+        draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = floor, offset_x = offset_x)
+        player.draw(window = window, offset_x = offset_x)
         
         pygame.display.flip()
 if __name__ == "__main__":

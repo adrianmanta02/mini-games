@@ -10,5 +10,5 @@ class CollidableObject(pygame.sprite.Sprite):
         self.height = height
         self.name = name
 
-    def draw(self, window):
-        window.blit(self.image, (self.rect.x, self.rect.y))
+    def draw(self, window, offset_x):
+        window.blit(self.image, (self.rect.x - offset_x, self.rect.y))

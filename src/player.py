@@ -32,7 +32,7 @@ class Player(pygame.sprite.Sprite):
     def landed(self):
         self.fall_count = 0 # reset adding gravity counter
         self.y_velocity = 0 
-        self.jump_count = 0 
+        self.jump_count = 0
 
     def hithead(self):
         self.fall_count = 0
@@ -90,20 +90,26 @@ class Player(pygame.sprite.Sprite):
 
         self.update_sprite()
 
-    def draw(self, window: pygame.Surface):
-        window.blit(source = self.current_sprite, dest = (self.rect.x, self.rect.y))
+    def draw(self, window: pygame.Surface, offset_x: int):
+        window.blit(source = self.current_sprite, dest = (self.rect.x - offset_x, self.rect.y))
 
     def update_sprite(self):
         sprite = "idle" # default for not moving or jumping
 
-        if self.x_velocity != 0: # movement detected -> load moving sprites
+        # jumping 
+        if self.y_velocity < 0: 
+            if self.jump_count == 1:
+                sprite = "jump"
+            elif self.jump_count == 2:
+                sprite = "double_jump"
+        # falling 
+        elif self.y_velocity > self.GRAVITY * 2:
+            sprite = "fall"
+         
+        # running
+        elif self.x_velocity != 0: # movement detected -> load moving sprites
             sprite = "run"
-
-        if self.jump_count == 1:
-            sprite = "jump"
-        elif self.jump_count == 2:
-            sprite = "double_jump"
-
+        
         # get the corresponding sprites according to the direction our player is facing
         sprite_sheet = sprite + "_" + self.direction
         sprites = self.sprites[sprite_sheet]
