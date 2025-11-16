@@ -16,10 +16,18 @@ class Player(pygame.sprite.Sprite):
         self.direction = "right" # it will help with player's animation handling
         self.animation_count = 0
         self.fall_count = 0 # timestamp for falling, the longer the player falls, the faster it is
+        self.jump_count = 0
         self.sprites = sprite_loader.load_sprites("MainCharacters", "VirtualGuy", 32, 32, True)
         self.current_sprite = self.sprites["idle_right"][0]
         self.mask = pygame.mask.from_surface(self.current_sprite)
         self.animation_delay = 5 # animation delay between sprite changes
+    
+    def jump(self):
+        self.y_velocity = -self.GRAVITY * 8
+        self.animation_count = 0
+        self.jump_count += 1
+        if self.jump_count == 1:
+            self.fall_count # as soon as player jumps, set the fall count to 0, in order not to be directly dragged down by the gravity
 
     def landed(self):
         self.fall_count = 0 # reset adding gravity counter
@@ -76,7 +84,7 @@ class Player(pygame.sprite.Sprite):
         self.y_velocity += min(1, self.GRAVITY / fps_count) * self.fall_count
         self.rect.y += self.y_velocity
         self.fall_count += 1
-        
+
         # vertical collisions
         self.handle_vertical_collision(objects, self.y_velocity)
 
@@ -90,6 +98,11 @@ class Player(pygame.sprite.Sprite):
 
         if self.x_velocity != 0: # movement detected -> load moving sprites
             sprite = "run"
+
+        if self.jump_count == 1:
+            sprite = "jump"
+        elif self.jump_count == 2:
+            sprite = "double_jump"
 
         # get the corresponding sprites according to the direction our player is facing
         sprite_sheet = sprite + "_" + self.direction

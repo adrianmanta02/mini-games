@@ -46,9 +46,14 @@ def main(window):
                 pygame.quit()
                 sys.exit()
 
+            if event.type == pygame.KEYDOWN:
+                # prevent infinitely jumping
+                if event.key == pygame.K_SPACE and player.jump_count < 2:
+                    player.jump()
+
         player.handle_move(5, floor)
         player.moving_loop(screen.fps, floor)
-        
+
         draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = floor)
         player.draw(window = window)
         
