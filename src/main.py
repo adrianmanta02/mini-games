@@ -37,6 +37,7 @@ def main(window):
 
     # create the base floor of blocks
     floor = [Block((i * block_size), screen.height - block_size, block_size) for i in range(-screen.width // block_size, screen.width * 2 // block_size)]
+    objects = [*floor, Block(0, screen.height - block_size * 2, block_size)]
 
     is_running = True
     while is_running:
@@ -56,10 +57,10 @@ def main(window):
         if ((player.rect.right - offset_x >= screen.width - scroll_area_width) and player.x_velocity > 0) or ((player.rect.left - offset_x <= scroll_area_width and player.x_velocity < 0)):
             offset_x += player.x_velocity
 
-        player.handle_move(5, floor)
-        player.moving_loop(screen.fps, floor)
+        player.handle_move(5, objects)
+        player.moving_loop(screen.fps, objects)
 
-        draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = floor, offset_x = offset_x)
+        draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = objects, offset_x = offset_x)
         player.draw(window = window, offset_x = offset_x)
         
         pygame.display.flip()

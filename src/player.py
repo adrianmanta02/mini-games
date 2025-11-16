@@ -52,15 +52,36 @@ class Player(pygame.sprite.Sprite):
                 collided_objects.append(object)
 
         return collided_objects
+    
+    def move(self, dx, dy):
+        self.rect.x += dx
+        self.rect.y += dy
+        
+    def handle_horizontal_collision(self, objects, dx):
+        self.move(dx, 0) # check if the player were to move, would they hit a block?
+        self.update() # update the rectangle and the mask before handling the collision
+
+        collided_object = None
+        for object in objects: 
+            if pygame.sprite.collide_rect(self, object): 
+                collided_object = object
+                break
+        
+        self.move(-dx, 0)
+        self.update()
+        return collided_object
 
     def handle_move(self, velocity, object_colliding_with):
         keys = pygame.key.get_pressed()
         self.x_velocity = 0
 
-        if keys[pygame.K_LEFT]:
+        collide_left = self.handle_horizontal_collision(object_colliding_with, -velocity * 2)
+        collide_right = self.handle_horizontal_collision(object_colliding_with, velocity * 2)
+
+        if keys[pygame.K_LEFT] and not collide_left:
             self.move_left(velocity)
         
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] and not collide_right:
             self.move_right(velocity)
 
         self.handle_vertical_collision(object_colliding_with, self.y_velocity)
