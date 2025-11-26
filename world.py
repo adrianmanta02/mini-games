@@ -29,14 +29,18 @@ class World:
 					rect.y = y * TILE_SIZE
 					tile_data = (img, rect)
 
-					if tile in (0, 1, 2, 3, 4, 5, 6):
+					if tile in (0, 1, 2, 3, 4, 5, 6, 11):
 						self.ground_list.append(tile_data)
 
 					if tile in (7, 14, 18, 19, 20, 21, 25, 26, 27, 28, 32, 33, 34, 35, 42, 43, 44, 45):
 						self.rock_list.append(tile_data)
 
-					if tile in (8, 9, 10, 13, 15, 16, 17, 23, 24, 30, 31, 37, 38, 39, 40, 46, 47, 48, 49):
+					if tile in (8, 9, 10, 13, 15, 16, 17, 23, 24, 30, 31, 37, 38, 39, 40, 46, 47, 48, 49, 50, 51):
 						self.decor_list.append(tile_data)
+
+					if tile == 12:
+						exit = Exit(x*TILE_SIZE, y*TILE_SIZE, tile_data)
+						self.objects_group[4].add(exit)
 
 					if tile == 41:
 						water = Water(x*TILE_SIZE, y*TILE_SIZE, tile_data)
@@ -126,8 +130,23 @@ class Potion(pygame.sprite.Sprite):
 	def draw(self, win):
 		win.blit(self.image, self.rect)
 
+class Exit(pygame.sprite.Sprite):
+	def __init__(self, x, y, tile_data):
+		super(Exit, self).__init__()
+
+		self.image = pygame.transform.scale(tile_data[0], (24,24)) 
+		self.rect = tile_data[1]
+		self.rect.x = x
+		self.rect.y = y - 8
+
+	def update(self, screen_scroll):
+		self.rect.x += screen_scroll
+
+	def draw(self, win):
+		win.blit(self.image, self.rect)
+
 def load_level(level):
-	file = f'Levels/level{1}_data'
+	file = f'Levels/level{level}_data'
 	with open(file, 'rb') as f:
 		data = pickle.load(f)
 		for y in range(len(data)):
