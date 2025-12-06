@@ -7,6 +7,7 @@ from screen import Screen
 from player import Player
 from block import Block
 from fire import Fire
+from checkpoint import Checkpoint
 
 pygame.init()
 pygame.display.set_caption("Level Editor - Click to place blocks")
@@ -36,7 +37,7 @@ class LevelEditor:
 			return
 			
 		# vertical rules - space between = size of a block = 96pixels
-		for x in range(-self.screen_width, self.screen_width * 10, self.block_size):
+		for x in range(0, self.screen_width * 10, self.block_size):
 			# adjust position via camera offset
 			screen_x = x - offset_x
 
@@ -120,6 +121,9 @@ class LevelEditor:
 			fire = Fire(x, y + self.block_size - 64, 16, 32)
 			fire.on()
 			self.objects.append(fire)
+		elif self.current_tool == "checkpoint":
+			checkpoint = Checkpoint(x, y - 32)
+			self.objects.append(checkpoint)
 	
 	def remove_object(self, x: int, y: int):
 		# keep only the objects having the coordinates different than the pair provided
@@ -210,7 +214,7 @@ def draw_hud(window, editor: LevelEditor, screen: Screen):
 	window.blit(stats, (10, 55))
 	
 	instructions = [
-		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire",
+		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire | 3: Checkpoint",
 		"G: Toggle Grid | C: Toggle Coords | S: Save | L: Load,",
 		"ARROWS: Move camera | SPACE: Test level | ESC: Clear all"
 	]
@@ -266,6 +270,10 @@ def main():
 					editor.current_tool = "fire"
 					print("Tool: FIRE")
 				
+				elif event.key == pygame.K_3:
+					editor.current_tool = "checkpoint"
+					print("Tool: CHECKPOINT")
+					
 				# save level
 				elif event.key == pygame.K_s:
 					filename = input("Enter filename (e.g., my_level.json): ")
@@ -326,6 +334,7 @@ def main():
 			
 			# update animations 
 			for obj in editor.objects:
+				obj.on_player_collision(player)
 				obj.update_sprite()
 		
 		# mouse interactions
@@ -374,6 +383,11 @@ def main():
 			font = pygame.font.Font(None, 24)
 			test_text = font.render("TEST MODE - SPACE to exit", True, (255, 0, 0))
 			window.blit(test_text, (screen.width // 2 - 150, 10))
+		
+		# draw death screen - obviously only if player is dead
+		if test_mode and player.is_dead:
+			if screen.draw_death_screen(window, player) == True: 
+				editor.offset_x = 0
 		
 		pygame.display.flip()
 	

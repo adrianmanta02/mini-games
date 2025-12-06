@@ -10,6 +10,7 @@ class CollidableObject(pygame.sprite.Sprite):
 		self.width = width
 		self.height = height
 		self.name = name
+		self.is_solid = True  # default: all objects are solid(apart from the Checkpoint)
 
 	def draw(self, window, offset_x):
 		window.blit(self.current_sprite, (self.rect.x - offset_x, self.rect.y))

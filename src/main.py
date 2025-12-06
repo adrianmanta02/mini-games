@@ -9,16 +9,19 @@ from screen import Screen
 from player import Player
 from block import Block
 from fire import Fire
+from checkpoint import Checkpoint
 
 pygame.init()
 pygame.display.set_caption("Adrian's Supergame")
 
 BG_COLOR = (255, 255, 255)
 FPS_COUNT = 60
+INITIAL_X_POSITION = 100
+INITIAL_Y_POSITION = 100
 
 screen = Screen(fps = FPS_COUNT, bgcolor = BG_COLOR)
 window = pygame.display.set_mode((screen.width, screen.height))
-player =  Player(100, 100, 100, 100)
+player =  Player(INITIAL_X_POSITION, INITIAL_Y_POSITION, 100, 100)
 
 def draw_background(screen: Screen, window, tile_model_name: str, objects: List[Block], offset_x: int): 
 	tiles, image = screen.get_background_tiles(tile_model_name)
@@ -48,6 +51,11 @@ def load_level_from_json(level_number: int, block_size: int = 96):
 			fire = Fire(trap_data["x"], trap_data["y"], 16, 32)
 			fire.on()
 			objects.append(fire)
+
+		for checkpoint_data in level_data.get("checkpoints", []):
+			checkpoint = Checkpoint(x = checkpoint_data["x"], 
+						   			y = checkpoint_data["y"])
+			objects.append(checkpoint)
 		
 		return objects
 	
@@ -82,6 +90,9 @@ def main(window):
 				pygame.quit()
 				sys.exit()
 
+			if player.is_dead: 
+				continue # ignore any interaction if player is dead
+		
 			if event.type == pygame.KEYDOWN:
 				# prevent infinitely jumping
 				if event.key == pygame.K_SPACE and player.jump_count < 2:
@@ -119,7 +130,8 @@ def main(window):
 		player.handle_move(5, objects)
 		player.moving_loop(screen.fps, objects)
 
-		for object in objects: 
+		for object in objects:	
+			object.on_player_collision(player)
 			object.update_sprite()
 
 		draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = objects, offset_x = offset_x)
@@ -133,6 +145,11 @@ def main(window):
 		small_font = pygame.font.Font(None, 24)
 		controls = small_font.render("N: Next | P: Previous | R: Restart", True, (100, 100, 100))
 		window.blit(controls, (10, screen.height - 30))
+
+		# draw death screen - if player is dead due to fall into the void or damage dealt by enemies
+		if player.is_dead:
+			if screen.draw_death_screen(window, player) == True: 
+				offset_x = 0
 
 		pygame.display.flip()
 if __name__ == "__main__":
