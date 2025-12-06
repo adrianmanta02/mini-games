@@ -29,7 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.hit_timer = 0
 
     def jump(self):
-        self.y_velocity = -self.GRAVITY * 8 # change the direction of the velocity -> negative means moving upwards
+        self.y_velocity = -self.GRAVITY * 9 # change the direction of the velocity -> negative means moving upwards
         self.animation_count = 0
 
         self.jump_count += 1
@@ -49,8 +49,8 @@ class Player(pygame.sprite.Sprite):
         print("Lives: ", self.lives)
 
         # check if alive
-        if self.lives <= 0:
-            pygame.quit()
+        # if self.lives <= 0:
+            # pygame.quit()
 
     def hithead(self):
         self.fall_count = 0
@@ -174,4 +174,3 @@ class Player(pygame.sprite.Sprite):
 
         # perform pixel perfect collision
         self.mask = pygame.mask.from_surface(self.current_sprite)
-
