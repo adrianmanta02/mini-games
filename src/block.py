@@ -9,6 +9,7 @@ class Block(CollidableObject):
 		block = self.load_block(size)
 		self.current_sprite.blit(block, (0,0))
 		self.mask = pygame.mask.from_surface(self.current_sprite)
+		self.size = size
 
 	def load_block(self, size):
 		# get the absolute path to the terrain assets
@@ -32,5 +33,5 @@ class Block(CollidableObject):
 		level_data['blocks'].append({
 					'x': self.rect.x,
 					'y': self.rect.y,
-					'size': self.block_size
+					'size': self.size
 				})

@@ -12,6 +12,7 @@ class Screen:
 		self.height = HEIGHT
 		self.fps = fps
 		self.bgcolor = bgcolor
+		self.completion_timer = 0
 
 	def set_background_color(self, bgcolor: Tuple[int, int, int]):
 		self.bgcolor = bgcolor
@@ -76,4 +77,45 @@ class Screen:
 			return True
 		
 		return False
+	
+	def draw_level_completed_screen(self, window):
+		# display the 'success' screen after reaching the end trophy
+		if self.completion_timer == 0:
+			self.completion_timer = self.fps * 3  # 3 seconds lifetime for the screen 
+		
+		# semitransp overlay
+		overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+		overlay.fill((0, 0, 0, 150)) 
+		window.blit(overlay, (0, 0))
+		
+		# "level completed!" message
+		font_large = pygame.font.Font(None, 100)
+		completed_text = font_large.render("LEVEL COMPLETED!", True, (0, 255, 0))
+		text_rect = completed_text.get_rect(center=(self.width // 2, self.height // 2 - 50))
+		
+		# shadow effect for the text
+		shadow_text = font_large.render("LEVEL COMPLETED!", True, (0, 100, 0))
+		shadow_rect = shadow_text.get_rect(center=(self.width // 2 + 4, self.height // 2 - 46))
+		window.blit(shadow_text, shadow_rect)
+		window.blit(completed_text, text_rect)
+		
+		# next level instruction
+		font_small = pygame.font.Font(None, 36)
+		timer_seconds = self.completion_timer // self.fps
+		
+		if timer_seconds > 0:
+			next_text = font_small.render(f"Next level in {timer_seconds}...", True, (200, 200, 200))
+		else:
+			next_text = font_small.render("Press N for next level", True, (200, 200, 200))
+			
+		next_rect = next_text.get_rect(center=(self.width // 2, self.height // 2 + 50))
+		window.blit(next_text, next_rect)
+		
+		self.completion_timer -= 1
+		
+		if self.completion_timer <= 0:
+			self.completion_timer = 0  # reset success screen timer for next displays
+			return True
+		
+		return False	
 	

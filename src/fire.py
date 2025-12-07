@@ -22,6 +22,8 @@ class Fire(CollidableObject):
 		self.animation_count = 0
 		self.animation_name = "off"
 		self.damage_sound = load_damage_sound()
+		self.is_solid = True  # fire blocks player
+		self.damage_cooldown = 0 
 	def on(self):
 		self.animation_name = "on"
 
@@ -46,11 +48,18 @@ class Fire(CollidableObject):
 		# reset the animation index often times, because it is a static object on the screen
 		if self.animation_count // self.animation_delay >= len(sprites):
 			self.animation_count = 0
+		
+		# lower cooldown for damage 
+		if self.damage_cooldown > 0:
+			self.damage_cooldown -= 1
 
 	def on_player_collision(self, player: Player):
-		pygame.mixer.music.load(self.damage_sound)
-		pygame.mixer.music.play()
-		player.hit()
+		# verify collision between player and fire
+		if pygame.sprite.collide_mask(self, player) and self.damage_cooldown == 0:
+			pygame.mixer.music.load(self.damage_sound)
+			pygame.mixer.music.play()
+			player.hit()
+			self.damage_cooldown = 30  # 0.5 seconds on a 60fps based screen
 
 	def get_json_saving_format(self, level_data: dict):
 		level_data['fires'].append({

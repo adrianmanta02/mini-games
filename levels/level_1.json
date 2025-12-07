@@ -1329,5 +1329,19 @@
       "width": 16,
       "height": 32
     }
-  ]
+  ],
+  "checkpoints": [
+    {
+      "x": 4128,
+      "y": 544,
+      "width": 64,
+      "height": 64
+    }
+  ],
+  "end": {
+    "x": 8136,
+    "y": 640,
+    "width": 64,
+    "height": 64
+  }
 }

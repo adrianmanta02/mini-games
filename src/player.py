@@ -35,6 +35,8 @@ class Player(pygame.sprite.Sprite):
 
 		self.checkpoint_x = x_position
 		self.checkpoint_y = y_position
+
+		self.reached_end_level = False
 	
 	def jump(self):
 		self.y_velocity = -self.GRAVITY * 9 # change the direction of the velocity -> negative means moving upwards
@@ -53,7 +55,7 @@ class Player(pygame.sprite.Sprite):
 	def hit(self):
 		self.lives -= 1
 		self.hit_flag = True
-		self.hit_timer = FPS_COUNT
+		self.hit_timer = FPS_COUNT // 4 
 		print("Lives: ", self.lives)
 
 		# check if alive

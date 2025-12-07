@@ -10,6 +10,7 @@ from player import Player
 from block import Block
 from fire import Fire
 from checkpoint import Checkpoint
+from end import End
 
 pygame.init()
 pygame.display.set_caption("Adrian's Supergame")
@@ -52,11 +53,18 @@ def load_level_from_json(level_number: int, block_size: int = 96):
 			fire.on()
 			objects.append(fire)
 
+		# load checkpoints
 		for checkpoint_data in level_data.get("checkpoints", []):
 			checkpoint = Checkpoint(x = checkpoint_data["x"], 
 						   			y = checkpoint_data["y"])
 			objects.append(checkpoint)
-		
+
+		# load end trophy - if there is one
+		trophy_data = level_data.get("end")
+		if trophy_data:
+			end = End(x = trophy_data["x"] - 24, y = trophy_data["y"])
+			objects.append(end)
+
 		return objects
 	
 	except FileNotFoundError:
@@ -142,15 +150,46 @@ def main(window):
 		level_text = font.render(f"Level {current_level}", True, (0,0,0))
 		window.blit(level_text, (10, 10))
 
+		lives_font = pygame.font.Font(None, 24)
+		lives_text = lives_font.render(f"Lives left: {player.lives}", True, (0,0,0))
+		window.blit(lives_text, (10, screen.height - 30))
+		
 		small_font = pygame.font.Font(None, 24)
 		controls = small_font.render("N: Next | P: Previous | R: Restart", True, (100, 100, 100))
 		window.blit(controls, (10, screen.height - 30))
 
 		# draw death screen - if player is dead due to fall into the void or damage dealt by enemies
 		if player.is_dead:
-			if screen.draw_death_screen(window, player) == True: 
-				offset_x = 0
+			if screen.draw_death_screen(window, player) == True:
+				# reset camera - if checkpoint is close to starting point, just reset the offset used to scroll
+				if player.checkpoint_x < scroll_area_width:
+					offset_x = 0
+				else:
+					# checkpoint further away - place camera around checkpointt
+					offset_x = player.checkpoint_x - scroll_area_width
 
+		if player.reached_end_level:
+			if screen.draw_level_completed_screen(window):
+				# advance to next level
+				current_level += 1
+
+				# delete old checkpoint 
+				player.checkpoint_x = INITIAL_X_POSITION
+				player.checkpoint_y = INITIAL_Y_POSITION
+				
+				# reset the flag for completing current level
+				player.reached_end_level = False
+				print(f"Player has {player.coins_earned} before level {current_level}")
+				
+				# load next level
+				new_objects = load_level_from_json(current_level, block_size)
+				
+				# reset the world map items and camera offset, as well as player positioning
+				if new_objects:
+					objects = new_objects
+					player.rect.x = INITIAL_X_POSITION
+					player.rect.y = INITIAL_Y_POSITION
+					offset_x = 0
 		pygame.display.flip()
 if __name__ == "__main__":
 	main(window = window)

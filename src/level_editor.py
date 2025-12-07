@@ -8,6 +8,7 @@ from player import Player
 from block import Block
 from fire import Fire
 from checkpoint import Checkpoint
+from end import End
 
 pygame.init()
 pygame.display.set_caption("Level Editor - Click to place blocks")
@@ -30,7 +31,11 @@ class LevelEditor:
 		self.GRID_COLOR = (200, 200, 200)
 		self.COORD_COLOR = (100, 100, 100)
 		self.HIGHLIGHT_COLOR = (255, 255, 0, 100)
-		
+
+		self.can_save_level = False # changed only if the end trophy is placed. A level must have an ending
+		self.error_message = ""
+		self.error_timer = 0
+
 	def draw_grid(self, window, offset_x: int):
 		# draw grid with vertical and horizontal lines
 		if not self.grid_visible:
@@ -124,6 +129,9 @@ class LevelEditor:
 		elif self.current_tool == "checkpoint":
 			checkpoint = Checkpoint(x, y - 32)
 			self.objects.append(checkpoint)
+		elif self.current_tool == "end":
+			end = End(x - 24, y - 32)
+			self.objects.append(end)
 	
 	def remove_object(self, x: int, y: int):
 		# keep only the objects having the coordinates different than the pair provided
@@ -133,7 +141,9 @@ class LevelEditor:
 		# save configuration in json files
 		level_data = {
 			'blocks': [],
-			'fires': []
+			'fires': [],
+			'checkpoints': [],
+			'end': None
 		}
 		
 		for obj in self.objects:
@@ -153,6 +163,8 @@ class LevelEditor:
 		print(f"Level saved to: {filepath}")
 		print(f"Total blocks: {len(level_data['blocks'])}")
 		print(f"Total fires: {len(level_data['fires'])}")
+		print(f"Total checkpoints: {len(level_data['checkpoints'])}")
+		print(f"Has end trophy: {level_data['end'] is not None}")
 	
 	def load_level(self, filename: str):
 		# load a level configuration from a JSON file
@@ -187,7 +199,25 @@ class LevelEditor:
 			)
 			fire.on()
 			self.objects.append(fire)
+
+		for checkpoint_data in level_data.get("checkpoints", []):
+			checkpoint = Checkpoint(
+				checkpoint_data["x"],
+				checkpoint_data['y'],
+				checkpoint_data['width'],
+				checkpoint_data['height']
+			)
+			self.objects.append(checkpoint)
 		
+		if level_data.get("end") != None: 
+			end_data = level_data.get("end")
+			end = End(
+				end_data['x'],
+				end_data['y'],
+				end_data['width'],
+				end_data['height']
+			)
+			self.objects.append(end)
 		print(f"Level loaded: {len(level_data.get('blocks', []))} blocks, {len(level_data.get('fires', []))} fires")
 	
 def draw_hud(window, editor: LevelEditor, screen: Screen):
@@ -214,7 +244,7 @@ def draw_hud(window, editor: LevelEditor, screen: Screen):
 	window.blit(stats, (10, 55))
 	
 	instructions = [
-		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire | 3: Checkpoint",
+		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire | 3: Checkpoint | 4: End Trophy",
 		"G: Toggle Grid | C: Toggle Coords | S: Save | L: Load,",
 		"ARROWS: Move camera | SPACE: Test level | ESC: Clear all"
 	]
@@ -273,13 +303,25 @@ def main():
 				elif event.key == pygame.K_3:
 					editor.current_tool = "checkpoint"
 					print("Tool: CHECKPOINT")
-					
+
+				elif event.key == pygame.K_4:
+					if editor.can_save_level == False:
+						# only add trophy if none was added before
+						editor.current_tool = "end"
+						print("Tool: END TROPHY")
+						editor.can_save_level = True # grant access for saving. 
+						# remove access for providing another trophy entity
+						
 				# save level
 				elif event.key == pygame.K_s:
-					filename = input("Enter filename (e.g., my_level.json): ")
-					if not filename.endswith('.json'):
-						filename += '.json'
-					editor.save_level(filename)
+					if editor.can_save_level == False: 
+						editor.error_message = "Not able to save level configuration! Level must have an ending! Add a trophy ending using '4' key."
+						editor.error_timer = FPS_COUNT * 3
+					else:
+						filename = input("Enter filename (e.g., my_level.json): ")
+						if not filename.endswith('.json'):
+							filename += '.json'
+						editor.save_level(filename)
 				
 				# load level
 				elif event.key == pygame.K_l:
@@ -388,9 +430,31 @@ def main():
 		if test_mode and player.is_dead:
 			if screen.draw_death_screen(window, player) == True: 
 				editor.offset_x = 0
-		
+		elif test_mode:
+			if player.reached_end_level:
+				if screen.draw_level_completed_screen(window):
+					# after screen popping message disappeared, reset player position
+					player.rect.x = 100
+					player.rect.y = 100
+					player.reached_end_level = False
+					editor.offset_x = 0		
+					
+		# handle not adding a trophy to the custom created level.
+		# !! Custom created levels MUST	have a trophy added
+		if editor.error_timer > 0:
+			# create the background message surface, as a red semitransparend ribbon 
+			error_surface = pygame.Surface((screen.width, 100), pygame.SRCALPHA)
+			error_surface.fill((255, 0, 0, 200))
+			window.blit(error_surface, (0, screen.height // 2 - 50))
+
+			# stick the message to the 'ribbon' created before
+			big_font = pygame.font.Font(None, 24)
+			error_text = big_font.render(editor.error_message, True, (255, 255, 255))
+			text_rect = error_text.get_rect(center = (screen.width // 2, screen.height // 2))
+			window.blit(error_text, text_rect)
+
+			editor.error_timer -= 1 
 		pygame.display.flip()
-	
 	pygame.quit()
 	sys.exit()
 
