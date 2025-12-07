@@ -30,7 +30,7 @@ title_font = "Fonts/Aladin-Regular.ttf"
 instructions_font = 'Fonts/BubblegumSans-Regular.ttf'
 # about_font = 'Fonts/DalelandsUncialBold-82zA.ttf'
 
-ghostbusters = Message(WIDTH//2 + 50, HEIGHT//2 - 90, 90, "GhostBusters", title_font, (255, 255, 255), win)
+ghostbusters = Message(WIDTH//2 + 50, HEIGHT//2 - 90, 90, "GhostWaver", title_font, (255, 255, 255), win)
 left_key = Message(WIDTH//2 + 10, HEIGHT//2 - 90, 20, "Press left arrow key to go left", instructions_font, (255, 255, 255), win)
 right_key = Message(WIDTH//2 + 10, HEIGHT//2 - 65, 20, "Press right arrow key to go right", instructions_font, (255, 255, 255), win)
 up_key = Message(WIDTH//2 + 10, HEIGHT//2 - 45, 20, "Press up arrow key to jump", instructions_font, (255, 255, 255), win)
