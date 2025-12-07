@@ -29,6 +29,7 @@ class End(AnimatedSprite):
 		if not self.activated and self.rect.colliderect(player.rect):
 			self.activate()
 			player.coins_earned += 100
+			player.change_character()
 			player.reached_end_level = True
 
 	def get_json_saving_format(self, level_data: dict):

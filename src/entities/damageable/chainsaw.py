@@ -5,7 +5,7 @@ from entities.base.damageable_entity import DamageableEntity
 class Chainsaw(AnimatedSprite, DamageableEntity):
 	def __init__(self, x, y, width = 38, height = 38, sprite_path = "Traps", sprite_name = "Saw"):
 		AnimatedSprite.__init__(self, x, y, width, height, "saw", sprite_path, sprite_name, default_animation = "on")
-		DamageableEntity.__init__(self, damage_sound_file="chainsaw-damage-sound.mp3", cooldown_frames=30)
+		DamageableEntity.__init__(self, damage_sound_file=None, cooldown_frames=60)  # No sound for chainsaw
 		
 		self.is_solid = True
 		self.initial_x = x  # save initial position for repetitive movement
@@ -38,7 +38,7 @@ class Chainsaw(AnimatedSprite, DamageableEntity):
 
 	def get_json_saving_format(self, level_data: dict):
 		level_data['chainsaws'].append({
-			'x': self.rect.x,
+			'x': self.initial_x,  # save initial position, not current (moving) position
 			'y': self.rect.y,
 			'width': self.width,
 			'height': self.height

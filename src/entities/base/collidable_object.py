@@ -11,6 +11,7 @@ class CollidableObject(pygame.sprite.Sprite):
 		self.height = height
 		self.name = name
 		self.is_solid = True  # default: all objects are solid(apart from the Checkpoint)
+		self.eliminate_from_map_once_touched = False
 
 	def draw(self, window, offset_x):
 		window.blit(self.current_sprite, (self.rect.x - offset_x, self.rect.y))

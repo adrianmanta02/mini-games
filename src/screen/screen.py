@@ -13,6 +13,7 @@ class Screen:
 		self.fps = fps
 		self.bgcolor = bgcolor
 		self.completion_timer = 0
+		self.enable_interactions = True
 
 	def set_background_color(self, bgcolor: Tuple[int, int, int]):
 		self.bgcolor = bgcolor
@@ -72,8 +73,9 @@ class Screen:
 		player.death_timer -= 1
 		
 		# reset player state after restart
-		if player.death_timer <= 0:
+		if player.death_timer == 0:
 			player.reset_player()
+			self.enable_interactions = True
 			return True
 		
 		return False
@@ -113,8 +115,7 @@ class Screen:
 		
 		self.completion_timer -= 1
 		
-		if self.completion_timer <= 0:
-			self.completion_timer = 0  # reset success screen timer for next displays
+		if self.completion_timer == 0:
 			return True
 		
 		return False	

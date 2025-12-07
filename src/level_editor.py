@@ -13,6 +13,7 @@ from entities.environment.end import End
 
 from entities.damageable.fire import Fire
 from entities.damageable.chainsaw import Chainsaw
+from entities.collectibles.fruit import Fruit
 
 pygame.init()
 pygame.display.set_caption("Level Editor - Click to place blocks")
@@ -37,6 +38,7 @@ class LevelEditor:
 		self.HIGHLIGHT_COLOR = (255, 255, 0, 100)
 
 		self.can_save_level = False # changed only if the end trophy is placed. A level must have an ending
+		self.end_already_added = False
 		self.error_message = ""
 		self.error_timer = 0
 
@@ -134,15 +136,34 @@ class LevelEditor:
 			checkpoint = Checkpoint(x, y - 32)
 			self.objects.append(checkpoint)
 		elif self.current_tool == "end":
-			end = End(x - 24, y - 32)
-			self.objects.append(end)
+			if not self.end_already_added:  # prevent multiple trophies
+				end = End(x - 24, y - 32)
+				self.objects.append(end)
+				self.end_already_added = True
+				self.can_save_level = True  # enable saving only after trophy is placed
 		elif self.current_tool == "chainsaw":
 			chainsaw = Chainsaw(x, y)
 			self.objects.append(chainsaw)
-	
+		elif self.current_tool == "fruit":
+			fruit = Fruit(x + 32, y + 32)
+			self.objects.append(fruit)
+
 	def remove_object(self, x: int, y: int):
-		# keep only the objects having the coordinates different than the pair provided
-		self.objects = [obj for obj in self.objects if not (obj.rect.x == x and obj.rect.y == y)]
+		# remove object at position (check if position is inside object's rect)
+		objects_to_remove = []
+		
+		for obj in self.objects:
+			# check if the click position is inside the object's rectangle
+			if obj.rect.collidepoint(x, y):
+				objects_to_remove.append(obj)
+				# Reset flags if removing special objects
+				if obj.name == "end":
+					self.end_already_added = False
+					self.can_save_level = False
+		
+		# Remove all objects that were clicked
+		for obj in objects_to_remove:
+			self.objects.remove(obj)
 	
 	def save_level(self, filename: str):
 		# save configuration in json files
@@ -151,7 +172,8 @@ class LevelEditor:
 			'fires': [],
 			'checkpoints': [],
 			'end': None,
-			'chainsaws': []
+			'chainsaws': [],
+			'fruits': []
 		}
 		
 		for obj in self.objects:
@@ -173,6 +195,7 @@ class LevelEditor:
 		print(f"Total fires: {len(level_data['fires'])}")
 		print(f"Total checkpoints: {len(level_data['checkpoints'])}")
 		print(f"Total chainsaws: {len(level_data['chainsaws'])}")
+		print(f"Total collectibles: {len(level_data['fruits'])}")
 		print(f"Has end trophy: {level_data['end'] is not None}")
 	
 	def load_level(self, filename: str):
@@ -226,10 +249,12 @@ class LevelEditor:
 				end_data['width'],
 				end_data['height']
 			)
+			self.can_save_level = True
+			self.end_already_added = True
 			self.objects.append(end)
 
-		if level_data.get("checkpoint", []) != []:
-			chainsaws_data = level_data.get("checkpoints")
+		if level_data.get("chainsaws", []) != []:
+			chainsaws_data = level_data.get("chainsaws")
 			for chainsaw_data in chainsaws_data:
 				chainsaw = Chainsaw(
 					chainsaw_data['x'],
@@ -237,7 +262,17 @@ class LevelEditor:
 					chainsaw_data['width'],
 					chainsaw_data['height']
 				)
-				self.objects.add(chainsaw)
+				self.objects.append(chainsaw)
+
+		# Load fruits
+		for fruit_data in level_data.get("fruits", []):
+			fruit = Fruit(
+				fruit_data['x'],
+				fruit_data['y'],
+				fruit_data['width'],
+				fruit_data['height']
+			)
+			self.objects.append(fruit)
 			
 		print(f"Level loaded: {len(level_data.get('blocks', []))} blocks, {len(level_data.get('fires', []))} fires")
 	
@@ -265,7 +300,7 @@ def draw_hud(window, editor: LevelEditor, screen: Screen):
 	window.blit(stats, (10, 55))
 	
 	instructions = [
-		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire | 3: Checkpoint | 4: End Trophy | 5: Chainsaw",
+		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire | 3: Checkpoint | 4: End Trophy | 5: Chainsaw | 6: Fruit",
 		"G: Toggle Grid | C: Toggle Coords | S: Save | L: Load,",
 		"ARROWS: Move camera | SPACE: Test level | ESC: Clear all"
 	]
@@ -285,7 +320,7 @@ def main():
 	editor = LevelEditor(block_size, screen.height, screen.width)
 	
 	# player for testing, not visible on the screen though
-	player = Player(100, 100, 100, 100)
+	player = Player(width = 100, height = 100)
 	test_mode = False
 	# area from which the camera scroll is triggered 
 	scroll_area_width = 200
@@ -326,18 +361,21 @@ def main():
 					print("Tool: CHECKPOINT")
 
 				elif event.key == pygame.K_4:
-					if editor.can_save_level == False:
-						# only add trophy if none was added before
+					if not editor.end_already_added:
 						editor.current_tool = "end"
 						print("Tool: END TROPHY")
-						editor.can_save_level = True # grant access for saving. 
-						# remove access for providing another trophy entity
-					
+					else:
+						print("Trophy already added! Remove it first if you want to place another.")
+				
 				elif event.key == pygame.K_5:
 					editor.current_tool = "chainsaw"
 					print("Tool: CHAINSAW")
 
-				# save level
+				elif event.key == pygame.K_6:
+						editor.current_tool = "fruit"
+						print("Tool: FRUIT")
+
+					# save level
 				elif event.key == pygame.K_s:
 					if editor.can_save_level == False: 
 						editor.error_message = "Not able to save level configuration! Level must have an ending! Add a trophy ending using '4' key."
@@ -360,21 +398,21 @@ def main():
 					confirm = input("Clear all objects? (y/n): ")
 					if confirm.lower() == 'y':
 						editor.objects = []
-						print("All objects cleared")
-				
-				# test mode
-				elif event.key == pygame.K_SPACE:
-					test_mode = not test_mode
-					if test_mode:
-						player.rect.x = 100
-						player.rect.y = 100
-						print("TEST MODE - Use arrows to move, SPACE to jump, SPACE again to exit")
-					else:
-						print("EDITOR MODE")
-				
-				# player jump in test mode
-				elif event.key == pygame.K_UP and test_mode and player.jump_count < 2:
-					player.jump()
+						editor.end_already_added = False
+						editor.can_save_level = False
+						print("All objects cleared")				# test mode
+					elif event.key == pygame.K_SPACE:
+						test_mode = not test_mode
+						if test_mode:
+							player.rect.x = 100
+							player.rect.y = 100
+							print("TEST MODE - Use arrows to move, SPACE to jump, SPACE again to exit")
+						else:
+							print("EDITOR MODE")
+					
+					# player jump in test mode
+					elif event.key == pygame.K_UP and test_mode and player.jump_count < 2:
+						player.jump()
 			
 			elif event.type == pygame.MOUSEBUTTONDOWN:
 				mouse_pressed = True
@@ -403,6 +441,8 @@ def main():
 			for obj in editor.objects:
 				obj.on_player_collision(player)
 				obj.update_sprite()
+				if obj.eliminate_from_map_once_touched:
+					editor.objects.remove(obj)
 		
 		# mouse interactions
 		if not test_mode and mouse_pressed:
@@ -412,7 +452,10 @@ def main():
 			if pygame.mouse.get_pressed()[0]:  # left click - add
 				editor.add_object(grid_x, grid_y)
 			elif pygame.mouse.get_pressed()[2]:  # right click - remove
-				editor.remove_object(grid_x, grid_y)
+				# Use real mouse position (with offset) for collision detection
+				real_x = mouse_pos[0] + editor.offset_x
+				real_y = mouse_pos[1]
+				editor.remove_object(real_x, real_y)
 		
 		# drawing
 		window.fill(BG_COLOR)
@@ -439,7 +482,7 @@ def main():
 			editor.draw_mouse_highlight(window, mouse_pos, editor.offset_x)
 		
 		# draw player in test mode
-		if test_mode:
+		if test_mode and not player.is_dead:
 			player.draw(window, editor.offset_x)
 		
 		# draw HUD
@@ -451,16 +494,21 @@ def main():
 			test_text = font.render("TEST MODE - SPACE to exit", True, (255, 0, 0))
 			window.blit(test_text, (screen.width // 2 - 150, 10))
 		
-		# draw death screen - obviously only if player is dead
+		# draw death screen - obviously only if player is dead (drawn AFTER player for overlay)
 		if test_mode and player.is_dead:
-			if screen.draw_death_screen(window, player) == True: 
-				editor.offset_x = 0
+			if screen.draw_death_screen(window, player) == True:
+				# Reset camera to checkpoint position
+				if player.checkpoint_x < scroll_area_width:
+					editor.offset_x = 0
+				else:
+					# Checkpoint further away - place camera around checkpoint
+					editor.offset_x = player.checkpoint_x - scroll_area_width
 		elif test_mode:
 			if player.reached_end_level:
 				if screen.draw_level_completed_screen(window):
 					# after screen popping message disappeared, reset player position
-					player.rect.x = 100
-					player.rect.y = 100
+					player.rect.x = player.checkpoint_x
+					player.rect.y = player.checkpoint_y
 					player.reached_end_level = False
 					editor.offset_x = 0		
 					

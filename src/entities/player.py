@@ -5,22 +5,45 @@ from screen.screen import HEIGHT
 
 sprite_loader = SpriteLoader()
 FPS_COUNT = 60
+MASK_DUDE_PRICE = 0
+NINJA_FROG_PRICE = 100
+PINK_MAN_PRICE = 400
+VIRTUAL_GUY_PRICE = 1000
 
 # using sprite for pixel-perfect collisions
 class Player(pygame.sprite.Sprite):
 	COLOR = (255, 0, 0)
 	GRAVITY = 1
-
-	def __init__(self, x_position, y_position, width, height):
-		self.rect = pygame.Rect(x_position, y_position, width, height)
+	characters = [
+		("MaskDude", MASK_DUDE_PRICE), 
+		("NinjaFrog", NINJA_FROG_PRICE),
+		("PinkMan", PINK_MAN_PRICE),
+		("VirtualGuy", VIRTUAL_GUY_PRICE)
+				]
+	default_x_starting_position = 100
+	default_y_starting_position = 100 
+	def __init__(self, width, height):
+		self.rect = pygame.Rect(Player.default_x_starting_position, 
+						  		Player.default_y_starting_position,
+								width, height)
 		self.x_velocity = 0
 		self.y_velocity = 1
+
 		self.direction = "right" # it will help with player's animation handling
 		self.animation_count = 0
 		self.fall_count = 0 # timestamp for falling, the longer the player falls, the faster it is
 		self.jump_count = 0
-		self.sprites = sprite_loader.load_sprites("MainCharacters", "VirtualGuy", 32, 32, True)
+		
+		self.current_character_index = 0
+		self.current_character = Player.characters[self.current_character_index][0]
+		self.sprites = sprite_loader.load_sprites(directory1 = "MainCharacters",
+												directory2 = self.current_character,
+												width = 32, 
+												height = 32, 
+												direction = True)
+		
 		self.current_sprite = self.sprites["idle_right"][0]
+
 		self.mask = pygame.mask.from_surface(self.current_sprite)
 		self.animation_delay = 5 # animation delay between sprite changes
 
@@ -33,8 +56,8 @@ class Player(pygame.sprite.Sprite):
 		self.is_dead = False
 		self.death_timer = 0
 
-		self.checkpoint_x = x_position
-		self.checkpoint_y = y_position
+		self.checkpoint_x = Player.default_x_starting_position
+		self.checkpoint_y = Player.default_y_starting_position
 
 		self.reached_end_level = False
 	
@@ -53,9 +76,12 @@ class Player(pygame.sprite.Sprite):
 		self.jump_count = 0 
 
 	def hit(self):
+		if self.reached_end_level == True:
+			return # make player immune if level completed
+		 
 		self.lives -= 1
 		self.hit_flag = True
-		self.hit_timer = FPS_COUNT // 4 
+		self.hit_timer = FPS_COUNT // 2  # 0.5 seconds for more visible hit animation
 		print("Lives: ", self.lives)
 
 		# check if alive
@@ -157,8 +183,14 @@ class Player(pygame.sprite.Sprite):
 	def update_sprite(self):
 		sprite = "idle" # default for not moving or jumping
 
+		# getting damaged - highest priority to ensure visibility
+		if self.hit_flag == True:
+			sprite = "hit"
+			self.hit_timer -= 1
+			if self.hit_timer <= 0:
+				self.hit_flag = False
 		# jumping 
-		if self.y_velocity < 0: 
+		elif self.y_velocity < 0: 
 			if self.jump_count == 1:
 				sprite = "jump"
 			elif self.jump_count == 2:
@@ -166,17 +198,9 @@ class Player(pygame.sprite.Sprite):
 		# falling 
 		elif self.y_velocity > self.GRAVITY * 2:
 			sprite = "fall"
-		 
-		# running+
+		# running
 		elif self.x_velocity != 0: # movement detected -> load moving sprites
 			sprite = "run"
-
-		# getting damaged 
-		elif self.hit_flag == True:
-			sprite = "hit"
-			self.hit_timer -= 1
-			if self.hit_timer <= 0:
-				self.hit_flag = False
 		
 		# get the corresponding sprites according to the direction our player is facing
 		sprite_sheet = sprite + "_" + self.direction
@@ -196,14 +220,28 @@ class Player(pygame.sprite.Sprite):
 		# perform pixel perfect collision
 		self.mask = pygame.mask.from_surface(self.current_sprite)
 
-	def reset_player(self):
-		self.coins_earned = 0
+	def _reset_common(self, preserve_coins=False):
+		# common reset logic for both death and level restart
+		if not preserve_coins:
+			self.coins_earned = 0
 		self.lives = 5
-		self.current_sprite = self.sprites["idle_right"][0]
 		self.is_dead = False
 		self.death_timer = 0
+		self.current_sprite = self.sprites["idle_right"][0]
+
+	def reset_player(self):
+		# used in death scenarios - respawn at last checkpoint
+		self._reset_common(preserve_coins=False)
 		self.rect.x = self.checkpoint_x
 		self.rect.y = self.checkpoint_y
+	
+	def restart_level(self, preserve_coins=False):
+		# full reset for new level - reset checkpoint to start
+		self._reset_common(preserve_coins=preserve_coins)
+		self.rect.x = Player.default_x_starting_position 			
+		self.rect.y = Player.default_y_starting_position
+		self.checkpoint_x = Player.default_x_starting_position
+		self.checkpoint_y = Player.default_y_starting_position 
 
 	def check_fallen_void(self, maximum_height_allowed_for_screen: int): 
 		threshold = 10
@@ -213,3 +251,17 @@ class Player(pygame.sprite.Sprite):
 				self.death_timer = FPS_COUNT * 3
 			return True
 		return False
+
+	def change_character(self): 
+		# check current character change after picking up treasures
+		if self.current_character_index + 1 < len(Player.characters):
+			next_character = Player.characters[self.current_character_index][0]
+			price_to_unlock = Player.characters[self.current_character_index][1]
+
+			if self.coins_earned >= price_to_unlock:
+				self.coins_earned -= price_to_unlock
+				self.current_character = next_character
+				self.sprites = sprite_loader.load_sprites("MainCharacters", self.current_character,
+											  32, 32, True)
+				self.current_character_index += 1
+	 
