@@ -3,12 +3,16 @@ import sys
 import pygame
 import json
 from typing import List, Dict
-from screen import Screen
-from player import Player
-from block import Block
-from fire import Fire
-from checkpoint import Checkpoint
-from end import End
+from screen.screen import Screen
+
+from entities.player import Player
+
+from entities.environment.block import Block
+from entities.environment.checkpoint import Checkpoint
+from entities.environment.end import End
+
+from entities.damageable.fire import Fire
+from entities.damageable.chainsaw import Chainsaw
 
 pygame.init()
 pygame.display.set_caption("Level Editor - Click to place blocks")
@@ -132,6 +136,9 @@ class LevelEditor:
 		elif self.current_tool == "end":
 			end = End(x - 24, y - 32)
 			self.objects.append(end)
+		elif self.current_tool == "chainsaw":
+			chainsaw = Chainsaw(x, y)
+			self.objects.append(chainsaw)
 	
 	def remove_object(self, x: int, y: int):
 		# keep only the objects having the coordinates different than the pair provided
@@ -143,7 +150,8 @@ class LevelEditor:
 			'blocks': [],
 			'fires': [],
 			'checkpoints': [],
-			'end': None
+			'end': None,
+			'chainsaws': []
 		}
 		
 		for obj in self.objects:
@@ -164,6 +172,7 @@ class LevelEditor:
 		print(f"Total blocks: {len(level_data['blocks'])}")
 		print(f"Total fires: {len(level_data['fires'])}")
 		print(f"Total checkpoints: {len(level_data['checkpoints'])}")
+		print(f"Total chainsaws: {len(level_data['chainsaws'])}")
 		print(f"Has end trophy: {level_data['end'] is not None}")
 	
 	def load_level(self, filename: str):
@@ -218,6 +227,18 @@ class LevelEditor:
 				end_data['height']
 			)
 			self.objects.append(end)
+
+		if level_data.get("checkpoint", []) != []:
+			chainsaws_data = level_data.get("checkpoints")
+			for chainsaw_data in chainsaws_data:
+				chainsaw = Chainsaw(
+					chainsaw_data['x'],
+					chainsaw_data['y'],
+					chainsaw_data['width'],
+					chainsaw_data['height']
+				)
+				self.objects.add(chainsaw)
+			
 		print(f"Level loaded: {len(level_data.get('blocks', []))} blocks, {len(level_data.get('fires', []))} fires")
 	
 def draw_hud(window, editor: LevelEditor, screen: Screen):
@@ -244,7 +265,7 @@ def draw_hud(window, editor: LevelEditor, screen: Screen):
 	window.blit(stats, (10, 55))
 	
 	instructions = [
-		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire | 3: Checkpoint | 4: End Trophy",
+		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire | 3: Checkpoint | 4: End Trophy | 5: Chainsaw",
 		"G: Toggle Grid | C: Toggle Coords | S: Save | L: Load,",
 		"ARROWS: Move camera | SPACE: Test level | ESC: Clear all"
 	]
@@ -311,7 +332,11 @@ def main():
 						print("Tool: END TROPHY")
 						editor.can_save_level = True # grant access for saving. 
 						# remove access for providing another trophy entity
-						
+					
+				elif event.key == pygame.K_5:
+					editor.current_tool = "chainsaw"
+					print("Tool: CHAINSAW")
+
 				# save level
 				elif event.key == pygame.K_s:
 					if editor.can_save_level == False: 

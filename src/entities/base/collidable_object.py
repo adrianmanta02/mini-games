@@ -1,5 +1,5 @@
 import pygame
-from player import Player
+from entities.player import Player
 
 class CollidableObject(pygame.sprite.Sprite):
 	def __init__(self, x, y, width, height, name = None):

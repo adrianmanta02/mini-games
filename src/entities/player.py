@@ -1,7 +1,7 @@
 import pygame
 from typing import Tuple
-from sprite_loader import SpriteLoader
-from screen import HEIGHT
+from loader.sprite_loader import SpriteLoader
+from screen.screen import HEIGHT
 
 sprite_loader = SpriteLoader()
 FPS_COUNT = 60

@@ -20,7 +20,7 @@ class Screen:
 	"""Fills the background with repetitive tiles."""
 	def get_background_tiles(self, tile_model_name: str):
 		BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-		image_path = os.path.join(BASE_DIR, "..", "assets", "Background", tile_model_name)
+		image_path = os.path.join(BASE_DIR, "..", "..", "assets", "Background", tile_model_name)
 		image = pygame.image.load(image_path)
 		_, _, height, width = image.get_rect()
 

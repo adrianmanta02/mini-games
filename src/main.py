@@ -6,13 +6,20 @@ from typing import List
 from os import listdir
 from os.path import isfile, join
 from screen import Screen
-from player import Player
-from block import Block
-from fire import Fire
-from checkpoint import Checkpoint
-from end import End
 
+from entities.player import Player
+from entities.environment.block import Block
+from entities.environment.checkpoint import Checkpoint
+from entities.environment.end import End
+
+from entities.damageable.fire import Fire
+from entities.damageable.chainsaw import Chainsaw
+
+
+# Initialize pygame mixer with optimal settings BEFORE pygame.init()
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
+pygame.mixer.set_num_channels(8)  # Allow multiple sounds to play simultaneously
 pygame.display.set_caption("Adrian's Supergame")
 
 BG_COLOR = (255, 255, 255)
@@ -65,6 +72,13 @@ def load_level_from_json(level_number: int, block_size: int = 96):
 			end = End(x = trophy_data["x"] - 24, y = trophy_data["y"])
 			objects.append(end)
 
+		chainsaws_data = level_data.get("chainsaws", [])
+		if chainsaws_data != []: 
+			for chainsaw_data in chainsaws_data:
+				chainsaw = Chainsaw(x = chainsaw_data['x'], 
+									y = chainsaw_data['y'])
+				objects.append(chainsaw)
+				
 		return objects
 	
 	except FileNotFoundError:

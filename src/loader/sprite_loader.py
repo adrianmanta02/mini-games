@@ -13,7 +13,7 @@ class SpriteLoader:
     def load_sprites(self, directory1: str, directory2: str, width: int, height: int, direction = False):
         # obtain the path to the folder containing the spritesheets
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(BASE_DIR, "..", "assets", directory1, directory2)
+        path = os.path.join(BASE_DIR, "..", "..", "assets", directory1, directory2)
 
         # get the paths for all spritesheets
         images = [image for image in os.listdir(path) if isfile(os.path.join(path, image))]

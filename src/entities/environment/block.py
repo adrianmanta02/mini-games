@@ -1,7 +1,7 @@
 import os
 import pygame
 from os.path import join
-from collidable_object import CollidableObject
+from entities.base.collidable_object import CollidableObject
 
 class Block(CollidableObject): 
 	def __init__(self, x, y, size):  
@@ -14,7 +14,7 @@ class Block(CollidableObject):
 	def load_block(self, size):
 		# get the absolute path to the terrain assets
 		BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-		path = join(BASE_DIR, "..", "assets", "Terrain", "Terrain.png")
+		path = join(BASE_DIR, "..", "..", "..", "assets", "Terrain", "Terrain.png")
 		
 		# load the image with transparent bg support 
 		image = pygame.image.load(path).convert_alpha()
