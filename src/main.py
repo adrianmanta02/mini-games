@@ -17,7 +17,7 @@ from entities.damageable.chainsaw import Chainsaw
 from entities.collectibles.fruit import Fruit
 
 pygame.init()
-pygame.display.set_caption("Adrian's Supergame")
+pygame.display.set_caption("Pixel Jumpers - Play Mode")
 
 BG_COLOR = (255, 255, 255)
 FPS_COUNT = 60
@@ -90,7 +90,13 @@ def load_level_from_json(level_number: int, block_size: int = 96):
 	except Exception as e:
 		return []
 
-def main(window):  
+def main(window):
+	# reset game state
+	global player
+	player = Player(PLAYER_WIDTH, PLAYER_HEIGHT)
+	screen.is_paused = False
+	screen.enable_interactions = True
+	  
 	clock = pygame.time.Clock()
 
 	block_size = 96
@@ -113,8 +119,8 @@ def main(window):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				is_running = False
-				pygame.quit()
-				sys.exit()
+				# return to menu
+				return
 
 			# handle pause toggle
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -124,17 +130,17 @@ def main(window):
 			# handle quit from pause menu
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_q and screen.is_paused:
 				is_running = False
-				pygame.quit()
-				sys.exit()
+				# exit the game loop to return to menu
+				return
 
 			if player.is_dead: 
 				screen.enable_interactions = False
 				continue # ignore any interaction if player is dead
-		
+			
 			# skip game inputs when paused
 			if screen.is_paused:
 				continue
-		
+			
 			if event.type == pygame.KEYDOWN and screen.enable_interactions == True:
 				# prevent infinitely jumping
 				if event.key == pygame.K_SPACE and player.jump_count < 2:
@@ -167,17 +173,17 @@ def main(window):
 			if ((player.rect.right - offset_x >= screen.width - scroll_area_width) and player.x_velocity > 0) or ((player.rect.left - offset_x <= scroll_area_width and player.x_velocity < 0)):
 				offset_x += player.x_velocity
 
-		# only allow player movement if interactions are enabled (not during death screens)
-		if screen.enable_interactions:
-			player.handle_move(5, objects)
-			player.moving_loop(screen.fps, objects)
+			# only allow player movement if interactions are enabled (not during death screens)
+			if screen.enable_interactions:
+				player.handle_move(5, objects)
+				player.moving_loop(screen.fps, objects)
 
-		for object in objects:
-			# collision detection is handled in handle_vertical_collision and handle_move
-			# only update sprites and remove collected items here
-			object.update_sprite()
-			if object.eliminate_from_map_once_touched:
-				objects.remove(object)		
+			for object in objects:
+				# collision detection is handled in handle_vertical_collision and handle_move
+				# only update sprites and remove collected items here
+				object.update_sprite()
+				if object.eliminate_from_map_once_touched:
+					objects.remove(object)		
 				
 		draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = objects, offset_x = offset_x)
 		player.draw(window = window, offset_x = offset_x)

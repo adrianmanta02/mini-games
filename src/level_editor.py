@@ -16,7 +16,7 @@ from entities.damageable.chainsaw import Chainsaw
 from entities.collectibles.fruit import Fruit
 
 pygame.init()
-pygame.display.set_caption("Level Editor - Click to place blocks")
+pygame.display.set_caption("Pixel Jumpers - Level Editor")
 
 BG_COLOR = (255, 255, 255)
 FPS_COUNT = 60
@@ -301,7 +301,7 @@ def draw_hud(window, editor: LevelEditor, screen: Screen):
 	
 	instructions = [
 		"LEFT CLICK: Place | RIGHT CLICK: Remove | 1: Block | 2: Fire | 3: Checkpoint | 4: End Trophy | 5: Chainsaw | 6: Fruit",
-		"G: Toggle Grid | C: Toggle Coords | S: Save | L: Load,",
+		"G: Toggle Grid | C: Toggle Coords | S: Save | L: Load | Q: Return to Menu",
 		"ARROWS: Move camera | SPACE: Test level | ESC: Clear all"
 	]
 	
@@ -392,6 +392,11 @@ def main():
 					if not filename.endswith('.json'):
 						filename += '.json'
 					editor.load_level(filename)
+				
+				# return to menu
+				elif event.key == pygame.K_q:
+					print("Returning to menu...")
+					running = False
 								
 				# clear all
 				elif event.key == pygame.K_ESCAPE:
@@ -528,8 +533,10 @@ def main():
 
 			editor.error_timer -= 1 
 		pygame.display.flip()
-	pygame.quit()
-	sys.exit()
+	
+	# only quit if running as standalone (not from menu)
+	if __name__ == "__main__":
+		pygame.quit()
 
 if __name__ == "__main__":
 	main()
