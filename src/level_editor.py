@@ -381,7 +381,7 @@ def main():
 						editor.error_message = "Not able to save level configuration! Level must have an ending! Add a trophy ending using '4' key."
 						editor.error_timer = FPS_COUNT * 3
 					else:
-						filename = input("Enter filename (e.g., my_level.json): ")
+						filename = input("Enter filename (e.g., level_3.json): ")
 						if not filename.endswith('.json'):
 							filename += '.json'
 						editor.save_level(filename)
@@ -400,19 +400,19 @@ def main():
 						editor.objects = []
 						editor.end_already_added = False
 						editor.can_save_level = False
-						print("All objects cleared")				# test mode
-					elif event.key == pygame.K_SPACE:
-						test_mode = not test_mode
-						if test_mode:
-							player.rect.x = 100
-							player.rect.y = 100
-							print("TEST MODE - Use arrows to move, SPACE to jump, SPACE again to exit")
-						else:
-							print("EDITOR MODE")
-					
+						print("All objects cleared")				
+				elif event.key == pygame.K_SPACE:
+					test_mode = not test_mode
+					if test_mode:
+						player.rect.x = 100
+						player.rect.y = 100
+						print("TEST MODE - Use arrows to move, SPACE to jump, SPACE again to exit")
+					else:
+						print("EDITOR MODE")
+				
 					# player jump in test mode
-					elif event.key == pygame.K_UP and test_mode and player.jump_count < 2:
-						player.jump()
+				elif event.key == pygame.K_UP and test_mode and player.jump_count < 2:
+					player.jump()
 			
 			elif event.type == pygame.MOUSEBUTTONDOWN:
 				mouse_pressed = True

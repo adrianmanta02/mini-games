@@ -123,12 +123,14 @@ class Player(pygame.sprite.Sprite):
 
 		collided_object = None
 		for object in objects:
-			# # ignore non solid objects
-			if hasattr(object, 'is_solid') and not object.is_solid:
-				continue
-			if pygame.sprite.collide_rect(self, object): 
-				collided_object = object
-				break
+			if pygame.sprite.collide_mask(self, object):
+				# trigger collision event for all objects (damage, checkpoint, fruit, etc.)
+				object.on_player_collision(self)
+				
+				# only solid objects block movement
+				if hasattr(object, 'is_solid') and object.is_solid:
+					collided_object = object
+					break
 		
 		self.move(-dx, 0)
 		self.update()

@@ -14,6 +14,7 @@ class Screen:
 		self.bgcolor = bgcolor
 		self.completion_timer = 0
 		self.enable_interactions = True
+		self.is_paused = False
 
 	def set_background_color(self, bgcolor: Tuple[int, int, int]):
 		self.bgcolor = bgcolor
@@ -118,5 +119,33 @@ class Screen:
 		if self.completion_timer == 0:
 			return True
 		
-		return False	
+		return False
+	
+	def draw_pause_screen(self, window):
+		# semitransparent overlay
+		overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+		overlay.fill((0, 0, 0, 120))
+		window.blit(overlay, (0, 0))
+		
+		# "paused" title
+		font_large = pygame.font.Font(None, 120)
+		pause_text = font_large.render("PAUSED", True, (255, 255, 255))
+		text_rect = pause_text.get_rect(center=(self.width // 2, self.height // 2 - 80))
+		
+		# shadow effect
+		shadow_text = font_large.render("PAUSED", True, (100, 100, 100))
+		shadow_rect = shadow_text.get_rect(center=(self.width // 2 + 4, self.height // 2 - 76))
+		window.blit(shadow_text, shadow_rect)
+		window.blit(pause_text, text_rect)
+		
+		# instructions
+		font_medium = pygame.font.Font(None, 48)
+		resume_text = font_medium.render("Press ESC to resume", True, (200, 200, 200))
+		resume_rect = resume_text.get_rect(center=(self.width // 2, self.height // 2 + 20))
+		window.blit(resume_text, resume_rect)
+		
+		font_small = pygame.font.Font(None, 36)
+		controls_text = font_small.render("R: Restart Level | Q: Quit Game", True, (150, 150, 150))
+		controls_rect = controls_text.get_rect(center=(self.width // 2, self.height // 2 + 80))
+		window.blit(controls_text, controls_rect)
 	

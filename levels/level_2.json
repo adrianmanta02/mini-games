@@ -1340,7 +1340,12 @@
       "height": 64
     }
   ],
-  "end": null,
+  "end": {
+    "x": 15432,
+    "y": 544,
+    "width": 64,
+    "height": 64
+  },
   "chainsaws": [
     {
       "x": 4608,

@@ -116,9 +116,24 @@ def main(window):
 				pygame.quit()
 				sys.exit()
 
+			# handle pause toggle
+			if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+				if not player.is_dead and not player.reached_end_level:
+					screen.is_paused = not screen.is_paused
+
+			# handle quit from pause menu
+			if event.type == pygame.KEYDOWN and event.key == pygame.K_q and screen.is_paused:
+				is_running = False
+				pygame.quit()
+				sys.exit()
+
 			if player.is_dead: 
 				screen.enable_interactions = False
 				continue # ignore any interaction if player is dead
+		
+			# skip game inputs when paused
+			if screen.is_paused:
+				continue
 		
 			if event.type == pygame.KEYDOWN and screen.enable_interactions == True:
 				# prevent infinitely jumping
@@ -146,21 +161,24 @@ def main(window):
 					player.restart_level()  # full reset: position, lives, coins, checkpoint
 					offset_x = 0		
 
-		# handle the scrolling screen effect		
-		if ((player.rect.right - offset_x >= screen.width - scroll_area_width) and player.x_velocity > 0) or ((player.rect.left - offset_x <= scroll_area_width and player.x_velocity < 0)):
-			offset_x += player.x_velocity
+		# skip game logic updates when paused
+		if not screen.is_paused:
+			# handle the scrolling screen effect		
+			if ((player.rect.right - offset_x >= screen.width - scroll_area_width) and player.x_velocity > 0) or ((player.rect.left - offset_x <= scroll_area_width and player.x_velocity < 0)):
+				offset_x += player.x_velocity
 
 		# only allow player movement if interactions are enabled (not during death screens)
 		if screen.enable_interactions:
 			player.handle_move(5, objects)
 			player.moving_loop(screen.fps, objects)
 
-		for object in objects:	
-			object.on_player_collision(player)
+		for object in objects:
+			# collision detection is handled in handle_vertical_collision and handle_move
+			# only update sprites and remove collected items here
 			object.update_sprite()
 			if object.eliminate_from_map_once_touched:
-				objects.remove(object)
-
+				objects.remove(object)		
+				
 		draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = objects, offset_x = offset_x)
 		player.draw(window = window, offset_x = offset_x)
 
@@ -208,7 +226,12 @@ def main(window):
 				# reset the world map items and camera offset, as well as player positioning
 				if new_objects:
 					objects = new_objects
-					offset_x = 0		
+					offset_x = 0
+		
+		# draw pause screen overlay
+		if screen.is_paused:
+			screen.draw_pause_screen(window)
+				
 		pygame.display.flip()
 if __name__ == "__main__":
 	main(window = window)
