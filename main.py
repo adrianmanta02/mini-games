@@ -9,10 +9,27 @@ from button import Button
 from texts import Text, Message, BlinkingText, MessageBox
 
 pygame.init()
-
-WIDTH, HEIGHT = 640, 384
-win = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
+# Initialize logical and display resolutions.
+# Logical surface is used for all game math/drawing; it will be scaled to the
+# actual display (fullscreen) so tiles and UI scale to the screen.
+WIDTH, HEIGHT = 830, 400  # logical resolution used for all game math/drawing
 TILE_SIZE = 16
+FULLSCREEN = True
+
+# create logical surface
+win = pygame.Surface((WIDTH, HEIGHT))
+
+# determine display size (use current desktop resolution when fullscreen)
+if FULLSCREEN:
+	info = pygame.display.Info()
+	DISPLAY_WIDTH, DISPLAY_HEIGHT = info.current_w or 1920, info.current_h or 1080
+	display = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT), pygame.FULLSCREEN)
+else:
+	DISPLAY_WIDTH, DISPLAY_HEIGHT = 1920, 1080
+	display = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT), pygame.NOFRAME)
+
+# scale used to convert mouse/display coords into logical surface coords
+INPUT_SCALE = (WIDTH / DISPLAY_WIDTH, HEIGHT / DISPLAY_HEIGHT)
 
 clock = pygame.time.Clock()
 FPS = 45
@@ -30,7 +47,7 @@ title_font = "Fonts/Aladin-Regular.ttf"
 instructions_font = 'Fonts/BubblegumSans-Regular.ttf'
 # about_font = 'Fonts/DalelandsUncialBold-82zA.ttf'
 
-ghostbusters = Message(WIDTH//2 + 50, HEIGHT//2 - 90, 90, "GhostWaver", title_font, (255, 255, 255), win)
+ghostbusters = Message(WIDTH//2 + 50, HEIGHT//2 - 90, 90, "GhostBusters", title_font, (255, 255, 255), win)
 left_key = Message(WIDTH//2 + 10, HEIGHT//2 - 90, 20, "Press left arrow key to go left", instructions_font, (255, 255, 255), win)
 right_key = Message(WIDTH//2 + 10, HEIGHT//2 - 65, 20, "Press right arrow key to go right", instructions_font, (255, 255, 255), win)
 up_key = Message(WIDTH//2 + 10, HEIGHT//2 - 45, 20, "Press up arrow key to jump", instructions_font, (255, 255, 255), win)
@@ -208,7 +225,7 @@ while running:
 		trail_group.add(t)
 
 
-		if play_btn.draw(win):
+		if play_btn.draw(win, INPUT_SCALE):
 			menu_click_fx.play()
 			world_data, level_length, w = reset_level(level)
 			p, moving_left, moving_right = reset_player()
@@ -217,23 +234,23 @@ while running:
 			main_menu = False
 			game_won = False
 
-		if about_btn.draw(win):
+		if about_btn.draw(win, INPUT_SCALE):
 			menu_click_fx.play()
 			about_page = True
 			main_menu = False
 
-		if controls_btn.draw(win):
+		if controls_btn.draw(win, INPUT_SCALE):
 			menu_click_fx.play()
 			controls_page = True
 			main_menu = False
 
-		if exit_btn.draw(win):
+		if exit_btn.draw(win, INPUT_SCALE):
 			menu_click_fx.play()
 			running = False
 
 	elif about_page:
 		MessageBox(win, about_font, 'GhostBusters', info)
-		if main_menu_btn.draw(win):
+		if main_menu_btn.draw(win, INPUT_SCALE):
 			menu_click_fx.play()
 			about_page = False
 			main_menu = True
@@ -245,7 +262,7 @@ while running:
 		space_key.update()
 		g_key.update()
 
-		if main_menu_btn.draw(win):
+		if main_menu_btn.draw(win, INPUT_SCALE):
 			menu_click_fx.play()
 			controls_page = False
 			main_menu = True
@@ -255,7 +272,7 @@ while running:
 
 	elif game_won:
 		game_won_msg.update()
-		if main_menu_btn.draw(win):
+		if main_menu_btn.draw(win, INPUT_SCALE):
 			menu_click_fx.play()
 			controls_page = False
 			main_menu = True
@@ -382,6 +399,9 @@ while running:
 
 	pygame.draw.rect(win, (255, 255,255), (0, 0, WIDTH, HEIGHT), 4, border_radius=10)
 	clock.tick(FPS)
+	# scale logical surface to the actual display window
+	scaled_win = pygame.transform.scale(win, (DISPLAY_WIDTH, DISPLAY_HEIGHT))
+	display.blit(scaled_win, (0, 0))
 	pygame.display.update()
 
 pygame.quit()

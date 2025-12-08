@@ -134,7 +134,8 @@ class Exit(pygame.sprite.Sprite):
 	def __init__(self, x, y, tile_data):
 		super(Exit, self).__init__()
 
-		self.image = pygame.transform.scale(tile_data[0], (24,24)) 
+		# scale exit image to match TILE_SIZE so it scales consistently
+		self.image = pygame.transform.scale(tile_data[0], (TILE_SIZE, TILE_SIZE))
 		self.rect = tile_data[1]
 		self.rect.x = x
 		self.rect.y = y - 8

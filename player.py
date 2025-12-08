@@ -1,6 +1,8 @@
 import pygame
 
-WIDTH, HEIGHT = 640, 384
+# Logical game resolution should match `main.py`'s WIDTH/HEIGHT
+# so boundary checks and scrolling work correctly.
+WIDTH, HEIGHT = 960, 576
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self, x, y):
