@@ -1,4 +1,12 @@
 import pygame
+import os
+import sys
+
+# Ensure working directory is the parent directory (game root) for asset loading
+# This allows the game to be run from either the root or src/ directory
+if os.path.basename(os.getcwd()) == 'src':
+	os.chdir('..')
+sys.path.insert(0, os.path.join(os.getcwd(), 'src'))
 
 from world import World, load_level
 from player import Player

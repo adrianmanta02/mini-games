@@ -1,11 +1,14 @@
 import random
 import pygame
+import os
 from projectiles import Bullet
 
 TILE_SIZE = 16
 
 pygame.mixer.init()
-bullet_fx = pygame.mixer.Sound('Sounds/ghost_shot.mp3')
+# Load sound with proper path handling
+sound_path = os.path.join(os.getcwd(), 'Sounds', 'ghost_shot.mp3')
+bullet_fx = pygame.mixer.Sound(sound_path)
 
 class Ghost(pygame.sprite.Sprite):
 	def __init__(self, x, y, win):

@@ -1,11 +1,14 @@
 import math
 import pygame
+import os
 from particles import Explosion
 
-WIDTH, HEIGHT = 640, 384
+WIDTH, HEIGHT = 960, 576
 
 pygame.mixer.init()
-grenade_blast_fx = pygame.mixer.Sound('Sounds/grenade blast.wav')
+# Load sound with proper path handling
+sound_path = os.path.join(os.getcwd(), 'Sounds', 'grenade blast.wav')
+grenade_blast_fx = pygame.mixer.Sound(sound_path)
 grenade_blast_fx.set_volume(0.6)
 
 class Bullet(pygame.sprite.Sprite):

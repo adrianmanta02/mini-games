@@ -1,7 +1,5 @@
 import pygame
 
-WIDTH, HEIGHT = 640, 384
-
 class Text:
 	''' This class returns an image '''
 	def __init__(self, font, font_size):
