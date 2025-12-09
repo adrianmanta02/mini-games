@@ -381,3 +381,5 @@ If you'd like to contribute to this project:
 5. Submit a pull request with a detailed description
 
 For detailed implementation details, see the README files in individual game directories.
+
+(am discutat pe teams cu dvs in legatura cu intarzierea ca sa nu fim depunctati)
