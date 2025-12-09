@@ -139,66 +139,6 @@ python-game-launcher/
 
 ---
 
-## System Requirements
-
-- **Python:** 3.8 or higher
-- **Operating System:** Windows, macOS, or Linux
-- **Memory:** Minimum 512 MB RAM (1 GB recommended)
-- **Storage:** Approximately 150 MB for all games and assets
-- **Display:** Minimum 800x600 resolution recommended
-- **Dependencies:** Pygame 2.5.2+, Pillow (for image processing)
-
----
-
-## Installation & Setup
-
-### Step 1: Clone the Repository
-
-```bash
-git clone <repository-url>
-cd python-game-launcher
-```
-
-### Step 2: Create Virtual Environment
-
-```bash
-python -m venv venv
-```
-
-### Step 3: Activate Virtual Environment
-
-**On Windows:**
-
-```bash
-venv\Scripts\activate
-```
-
-**On macOS/Linux:**
-
-```bash
-source venv/bin/activate
-```
-
-### Step 4: Install Dependencies
-
-```bash
-pip install pillow pygame
-```
-
----
-
-## Running Instructions
-
-### Launch the Arcade Launcher
-
-To run the main arcade interface with game selection:
-
-```bash
-python engine.py
-```
-
----
-
 ## Development Workflow
 
 This project was developed using a collaborative branching strategy:
@@ -276,7 +216,7 @@ This project was developed using a collaborative branching strategy:
 
 ✅ **User Content Creation:** Level editors enabling players to create and share custom content
 
-✅ **Code Quality:** ~2,550 lines of code total (~850 per team member) following OOP principles
+✅ **Code Quality:** Modular OOP design, consistent style, and clear separation between engine, game logic, and assets
 
 ✅ **Documentation:** Comprehensive README files for main project and individual games
 
@@ -290,7 +230,7 @@ This project was developed using a collaborative branching strategy:
 
 **Issue:** Assets or resources not loading
 
-- **Solution:** Ensure you're running games from their respective directories (`game1/`, `game2/src/`, `game3/`) so relative paths resolve correctly
+- **Solution:** Ensure you're running games from their respective directories (`game1/src`, `game2/src/`, `game3/src`) so relative paths resolve correctly
 - **Solution:** Verify all asset folders are present in the game directories
 
 **Issue:** Pygame not found or import errors
