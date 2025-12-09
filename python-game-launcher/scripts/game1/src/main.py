@@ -1,243 +1,140 @@
-import os
-import sys
-import json
 import pygame
-from typing import List
-from os import listdir
-from os.path import isfile, join
-from screen.screen import Screen
+import sys
+import os
 
-from entities.player import Player
-from entities.environment.block import Block
-from entities.environment.checkpoint import Checkpoint
-from entities.environment.end import End
-
-from entities.damageable.fire import Fire
-from entities.damageable.chainsaw import Chainsaw
-from entities.collectibles.fruit import Fruit
+# add src directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 pygame.init()
-pygame.display.set_caption("Pixel Jumpers - Play Mode")
 
-BG_COLOR = (255, 255, 255)
-FPS_COUNT = 60
-PLAYER_WIDTH = 100
-PLAYER_HEIGHT = 100
+# screen settings
+WIDTH = 1000
+HEIGHT = 800
+FPS = 60
 
-screen = Screen(fps = FPS_COUNT, bgcolor = BG_COLOR)
-window = pygame.display.set_mode((screen.width, screen.height))
-player =  Player(PLAYER_WIDTH, PLAYER_HEIGHT)
+# colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GRAY = (100, 100, 100)
+LIGHT_GRAY = (200, 200, 200)
+BLUE = (70, 130, 255)
+DARK_BLUE = (50, 100, 200)
+GREEN = (100, 200, 100)
+DARK_GREEN = (70, 150, 70)
 
-def draw_background(screen: Screen, window, tile_model_name: str, objects: List[Block], offset_x: int): 
-	tiles, image = screen.get_background_tiles(tile_model_name)
-	for tile in tiles:
-		window.blit(image, tile)
-
-	for object in objects:
-		object.draw(window = window, offset_x = offset_x)
+class Button:
+	def __init__(self, x, y, width, height, text, color):
+		self.rect = pygame.Rect(x, y, width, height)
+		self.text = text
+		self.color = color
 		
-def load_level_from_json(level_number: int, block_size: int = 96):
-	BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-	json_path = os.path.join(BASE_DIR, "..", "levels", f"level_{level_number}.json")
-	
-	objects = []
-	
-	try:
-		with open(json_path, 'r') as f:
-			level_data = json.load(f)
+	def draw(self, window):
+		# draw button with shadow effect
+		shadow_rect = pygame.Rect(self.rect.x + 5, self.rect.y + 5, self.rect.width, self.rect.height)
+		pygame.draw.rect(window, GRAY, shadow_rect, border_radius=10)
 		
-		# load blocks
-		for block_data in level_data.get("blocks", []):
-			block = Block(block_data["x"], block_data["y"], block_data["size"])
-			objects.append(block)
+		# draw main button
+		pygame.draw.rect(window, self.color, self.rect, border_radius=10)
+		pygame.draw.rect(window, BLACK, self.rect, 3, border_radius=10)
 		
-		# load traps - fires
-		for trap_data in level_data.get("fires", []):
-			fire = Fire(trap_data["x"], trap_data["y"], 16, 32)
-			fire.on()
-			objects.append(fire)
-
-		# load checkpoints
-		for checkpoint_data in level_data.get("checkpoints", []):
-			checkpoint = Checkpoint(x = checkpoint_data["x"], 
-						   			y = checkpoint_data["y"])
-			objects.append(checkpoint)
-
-		# load end trophy - if there is one
-		trophy_data = level_data.get("end")
-		if trophy_data:
-			end = End(x = trophy_data["x"] - 24, y = trophy_data["y"])
-			objects.append(end)
-
-		chainsaws_data = level_data.get("chainsaws", [])
-		if chainsaws_data != []: 
-			for chainsaw_data in chainsaws_data:
-				chainsaw = Chainsaw(x = chainsaw_data['x'], 
-									y = chainsaw_data['y'])
-				objects.append(chainsaw)
-
-		fruits_data = level_data.get("fruits", [])
-		if fruits_data != []:
-			for fruit_data in fruits_data: 
-				fruit = Fruit(x = fruit_data['x'],
-				  			  y = fruit_data['y'])
-				objects.append(fruit)
+		# draw text
+		font = pygame.font.Font(None, 48)
+		text_surface = font.render(self.text, True, WHITE)
+		text_rect = text_surface.get_rect(center=self.rect.center)
+		window.blit(text_surface, text_rect)
 		
-		return objects
-	
-	except FileNotFoundError:
-		return []
-	except Exception as e:
-		return []
+	def is_clicked(self, mouse_pos, mouse_click):
+		return self.rect.collidepoint(mouse_pos) and mouse_click
 
-def main(window):
-	# reset game state
-	global player
-	player = Player(PLAYER_WIDTH, PLAYER_HEIGHT)
-	screen.is_paused = False
-	screen.enable_interactions = True
-	  
-	clock = pygame.time.Clock()
-
-	block_size = 96
-	offset_x = 0 
-	scroll_area_width = 200
-
-	current_level = 1
-	objects = load_level_from_json(current_level, block_size)
-
-	# fallback for non existent level
-	if not objects:
-		floor = [Block((i * block_size), screen.height - block_size, block_size) 
-                 for i in range(-screen.width // block_size, screen.width * 2 // block_size)]
-		objects = [*floor, Block(0, screen.height - block_size * 2, block_size)]
-	
-	is_running = True
-	while is_running:
-		clock.tick(screen.fps) # run the game at the fps limit set by the screen
-
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				is_running = False
-				# return to menu
-				return
-
-			# handle pause toggle
-			if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-				if not player.is_dead and not player.reached_end_level:
-					screen.is_paused = not screen.is_paused
-
-			# handle quit from pause menu
-			if event.type == pygame.KEYDOWN and event.key == pygame.K_q and screen.is_paused:
-				is_running = False
-				# exit the game loop to return to menu
-				return
-
-			if player.is_dead: 
-				screen.enable_interactions = False
-				continue # ignore any interaction if player is dead
+class MainMenu:
+	def __init__(self):
+		self.window = pygame.display.set_mode((WIDTH, HEIGHT))
+		pygame.display.set_caption("Pixel Jumpers")
+		self.clock = pygame.time.Clock()
+		
+		# create buttons
+		button_width = 300
+		button_height = 80
+		button_x = WIDTH // 2 - button_width // 2
+		
+		self.play_button = Button(
+			button_x, 300, button_width, button_height,
+			"PLAY", BLUE
+		)
+		
+		self.editor_button = Button(
+			button_x, 420, button_width, button_height,
+			"LEVEL EDITOR", GREEN
+		)
+		
+		self.quit_button = Button(
+			button_x, 540, button_width, button_height,
+			"QUIT", GRAY
+		)
+		
+	def draw_title(self):
+		font_large = pygame.font.Font(None, 120)
+		title_text = font_large.render("PIXEL JUMPERS", True, BLACK)
+		title_rect = title_text.get_rect(center=(WIDTH // 2 + 4, 120 + 4))
+		self.window.blit(title_text, title_rect)
+		
+		title_text_main = font_large.render("PIXEL JUMPERS", True, BLUE)
+		title_rect_main = title_text_main.get_rect(center=(WIDTH // 2, 120))
+		self.window.blit(title_text_main, title_rect_main)
+		
+	def run(self):
+		running = True
+		
+		while running:
+			self.clock.tick(FPS)
+			mouse_pos = pygame.mouse.get_pos()
+			mouse_click = False
 			
-			# skip game inputs when paused
-			if screen.is_paused:
-				continue
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					running = False
+					pygame.quit()
+					sys.exit()
+					
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				mouse_click = True
+				
+			# Check button clicks
+			if self.play_button.is_clicked(mouse_pos, mouse_click):
+				self.start_game()			
+			if self.editor_button.is_clicked(mouse_pos, mouse_click):
+				self.start_editor()
+				
+			if self.quit_button.is_clicked(mouse_pos, mouse_click):
+				running = False
+				pygame.quit()
+				sys.exit()
 			
-			if event.type == pygame.KEYDOWN and screen.enable_interactions == True:
-				# prevent infinitely jumping
-				if event.key == pygame.K_SPACE and player.jump_count < 2:
-					player.jump()
-
-				if event.key == pygame.K_n:
-					current_level += 1
-					new_objects = load_level_from_json(current_level, block_size)
-					if new_objects:
-						objects = new_objects
-						player.restart_level()  # start fresh on new level
-						offset_x = 0
-					else: 
-						current_level -= 1			
-						
-				if event.key == pygame.K_p: 
-					if current_level > 1:
-						current_level -= 1
-						objects = load_level_from_json(current_level, block_size)
-						player.restart_level()  # start fresh on previous level
-						offset_x = 0			
-				if event.key == pygame.K_r:
-					objects = load_level_from_json(current_level, block_size)
-					player.restart_level()  # full reset: position, lives, coins, checkpoint
-					offset_x = 0		
-
-		# skip game logic updates when paused
-		if not screen.is_paused:
-			# handle the scrolling screen effect		
-			if ((player.rect.right - offset_x >= screen.width - scroll_area_width) and player.x_velocity > 0) or ((player.rect.left - offset_x <= scroll_area_width and player.x_velocity < 0)):
-				offset_x += player.x_velocity
-
-			# only allow player movement if interactions are enabled (not during death screens)
-			if screen.enable_interactions:
-				player.handle_move(5, objects)
-				player.moving_loop(screen.fps, objects)
-
-			for object in objects:
-				# collision detection is handled in handle_vertical_collision and handle_move
-				# only update sprites and remove collected items here
-				object.update_sprite()
-				if object.eliminate_from_map_once_touched:
-					objects.remove(object)		
-				
-		draw_background(screen = screen, window = window, tile_model_name = "Purple.png", objects = objects, offset_x = offset_x)
-		player.draw(window = window, offset_x = offset_x)
-
-		# add hud
-		font = pygame.font.Font(None, 36)
-		level_text = font.render(f"Level {current_level}", True, (0,0,0))
-		window.blit(level_text, (10, 10))
-
-		lives_font = pygame.font.Font(None, 24)
-		lives_text = lives_font.render(f"Lives left: {player.lives}", True, (0,0,0))
-		window.blit(lives_text, (10, screen.height - 30))
+			# draw everything
+			self.window.fill(WHITE)
+			self.draw_title()
+			self.play_button.draw(self.window)
+			self.editor_button.draw(self.window)
+			self.quit_button.draw(self.window)
+			
+			pygame.display.flip()
+			
+	def start_game(self):
+		# close menu and start main game
+		import game
+		game.main(game.window)
+		# when game ends, return to menu
+		self.__init__()
+		self.run()
 		
-		coins_font = pygame.font.Font(None, 24)
-		coins_text = coins_font.render(f"Coins earned: {player.coins_earned}", True, (0,0,0))
-		window.blit(coins_text, (10, screen.height - 50))
-		
-		small_font = pygame.font.Font(None, 24)
-		controls = small_font.render("N: Next | P: Previous | R: Restart", True, (100, 100, 100))
-		window.blit(controls, (10, screen.height - 70))
+	def start_editor(self):
+		# close menu and start level editor
+		import level_editor
+		level_editor.main()
+		# when editor closes, return to menu
+		self.__init__()
+		self.run()
 
-		# draw death screen - if player is dead due to fall into the void or damage dealt by enemies
-		if player.is_dead:
-			if screen.draw_death_screen(window, player) == True:
-				# reset camera - if checkpoint is close to starting point, just reset the offset used to scroll
-				if player.checkpoint_x < scroll_area_width:
-					offset_x = 0
-				else:
-					# checkpoint further away - place camera around checkpointt
-					offset_x = player.checkpoint_x - scroll_area_width
-
-		if player.reached_end_level:
-			if screen.draw_level_completed_screen(window):
-				# advance to next level
-				current_level += 1
-				
-				# reset the flag for completing current level
-				player.restart_level(preserve_coins=True)  # Keep coins when advancing
-				player.reached_end_level = False
-
-				print(f"Player has {player.coins_earned} coins before level {current_level}")
-				
-				# load next level's configuration
-				new_objects = load_level_from_json(current_level, block_size)
-				
-				# reset the world map items and camera offset, as well as player positioning
-				if new_objects:
-					objects = new_objects
-					offset_x = 0
-		
-		# draw pause screen overlay
-		if screen.is_paused:
-			screen.draw_pause_screen(window)
-				
-		pygame.display.flip()
 if __name__ == "__main__":
-	main(window = window)
+	menu = MainMenu()
+	menu.run()
