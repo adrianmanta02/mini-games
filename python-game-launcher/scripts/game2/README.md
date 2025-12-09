@@ -6,13 +6,10 @@ A 2D platformer game with action elements, developed in Python using the Pygame 
 
 Ghost Waver is an engaging 2D platformer where players must navigate through tile-based levels filled with obstacles, water hazards, and ghost enemies. The game combines classic platformer mechanics with combat and progression systems. Key components include:
 
-**Game Mode:** Navigate levels with a multiple lives system, collect coins for unlocking characters, use magic potions to restore health, and defeat enemies to progress
-
-**Level Editor:** Create custom levels with an intuitive visual interface for tile placement, enemy positioning, and level design
-
-**Progression System:** Earn coins throughout levels to unlock different characters and enhance replayability
-
-**Combat & Hazards:** Throw grenades to defeat ghost enemies and navigate around water-based obstacles
+- **Game Mode:** Navigate levels with a multiple lives system, collect coins for unlocking characters, use magic potions to restore health, and defeat enemies to progress
+- **Level Editor:** Create custom levels with an intuitive visual interface for tile placement, enemy positioning, and level design
+- **Progression System:** Earn coins throughout levels to unlock different characters and enhance replayability
+- **Combat & Hazards:** Throw grenades to defeat ghost enemies and navigate around water-based obstacles
 
 ## Programming Languages and Technologies
 
@@ -35,17 +32,12 @@ Ghost Waver is an engaging 2D platformer where players must navigate through til
 
 ## Game Mode Details
 
-**Multiple Lives System:** Players start with a set number of lives. Taking damage from enemies or hazards costs one life. Lose all lives and restart the level.
-
-**Coins & Character Progression:** Collect coins scattered throughout levels to unlock different playable characters, adding replay value and customization.
-
-**Magic Potions:** Health pickups scattered across levels. Collect potions to restore health and survive longer. Managing health is crucial to level completion.
-
-**Platforming Mechanics:** Jump, move left/right with precise controls. Tile-based physics ensures predictable movement and collision.
-
-**Enemy Combat:** Ghost enemies patrol levels. Use grenades to defeat them and clear safe paths. Strategic grenade use is key to survival.
-
-**Water Hazards:** Navigate around water obstacles that damage the player. Careful jumping and timing are required.
+- **Multiple Lives System:** Players start with a set number of lives. Taking damage from enemies or hazards costs one life. Lose all lives and restart the level.
+- **Coins & Character Progression:** Collect coins scattered throughout levels to unlock different playable characters, adding replay value and customization.
+- **Magic Potions:** Health pickups scattered across levels. Collect potions to restore health and survive longer. Managing health is crucial to level completion.
+- **Platforming Mechanics:** Jump, move left/right with precise controls. Tile-based physics ensures predictable movement and collision.
+- **Enemy Combat:** Ghost enemies patrol levels. Use grenades to defeat them and clear safe paths. Strategic grenade use is key to survival.
+- **Water Hazards:** Navigate around water obstacles that damage the player. Careful jumping and timing are required.
 
 ## Level Editor
 
@@ -60,7 +52,7 @@ Ghost Waver includes a built-in level editor allowing you to design custom level
 
 ### Important Note on Level Editor Scaling
 
-The level editor may display levels that aren't scaled properly on screen. This is addressed through the main game's scaling system—levels designed in the editor will display correctly when played in `main.py`.
+The level editor may display levels that aren't scaled properly on screen. This is addressed through the main game's scaling system—levels designed in the editor will display correctly when played in main.py.
 
 ## Main Features
 
@@ -143,13 +135,13 @@ cd scripts/game2
 python -m venv venv
 ```
 
-On Windows:
+**On Windows:**
 
 ```bash
 venv\Scripts\activate
 ```
 
-On macOS/Linux:
+**On macOS/Linux:**
 
 ```bash
 source venv/bin/activate
