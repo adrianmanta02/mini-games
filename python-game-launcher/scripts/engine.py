@@ -28,7 +28,7 @@ class ArcadeLauncher:
         
         title_label = tk.Label(
             title_frame,
-            text="⚡ ARCADE GAMES ⚡",
+            text="ARCADE GAMES",
             font=("Arial", 48, "bold"),
             fg="#00ffff",
             bg="#0a0e27"
