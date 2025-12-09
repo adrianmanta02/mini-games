@@ -206,21 +206,21 @@ This project was developed using a collaborative branching strategy:
 
 ## Key Accomplishments
 
-✅ **Collaborative Development:** Successfully merged three independently developed games into a unified arcade platform
+**Collaborative Development:** Successfully merged three independently developed games into a unified arcade platform
 
-✅ **Feature Diversity:** Three games with distinctly different mechanics and gameplay styles:
+**Feature Diversity:** Three games with distinctly different mechanics and gameplay styles:
 
 - Physics-driven platforming (Pixel Jumpers)
 - Action-focused combat (Ghost Waver)
 - Puzzle-oriented state-switching (Shadow Switch)
 
-✅ **User Content Creation:** Level editors enabling players to create and share custom content
+**User Content Creation:** Level editors enabling players to create and share custom content
 
-✅ **Code Quality:** Modular OOP design, consistent style, and clear separation between engine, game logic, and assets
+**Code Quality:** Modular OOP design, consistent style, and clear separation between engine, game logic, and assets
 
-✅ **Documentation:** Comprehensive README files for main project and individual games
+**Documentation:** Comprehensive README files for main project and individual games
 
-✅ **Version Control:** Proper Git workflow with feature branches and merge integration
+**Version Control:** Proper Git workflow with feature branches and merge integration
 
 ---
 
@@ -313,7 +313,6 @@ This project was developed by three students working on different branches and f
   - Set up the main repository structure and arcade launcher
   - Implemented the engine and game integration system
   - Established development workflow and branching strategy
-- **Lines of Code:** ~850
 
 ### Mihaela Ciuranu
 
@@ -323,7 +322,6 @@ This project was developed by three students working on different branches and f
   - Created the arcade interface and game selection system
   - Designed and implemented comprehensive project README and game documentation
   - Integrated UI/UX for the arcade launcher
-- **Lines of Code:** ~850
 
 ### Ana Maria Cocoru
 
@@ -332,7 +330,6 @@ This project was developed by three students working on different branches and f
   - Developed "Shadow Switch" - a unique puzzle-platformer
   - Implemented the state-switching mechanic system
   - Created environmental manipulation puzzles
-- **Lines of Code:** ~850
 
 ---
 
