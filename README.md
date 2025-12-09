@@ -7,6 +7,7 @@ A 2D platformer game featuring dual-form mechanics where you play as a firefly n
 ## Game Description
 
 Shadow Switch is a puzzle-platformer where players control a firefly that can switch between Light Form and Shadow Form. Each form has unique abilities and restrictions, requiring strategic thinking to overcome obstacles, collect light orbs, avoid enemies, and reach the finish portal.
+
 ---
 ### Core Mechanics:
 - **Dual-Form System**: Switch between Light (fast, bright) and Shadow (slow, stealthy) forms
